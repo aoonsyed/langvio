@@ -1,36 +1,40 @@
 """
-LLM processors using LangChain
+Core LLM processor using LangChain
 """
 
 import json
 import logging
 from typing import Dict, Any, List, Optional
 
-from langchain.llms import BaseLLM
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatModel
 
 from langvio.llm.base import BaseLLMProcessor
 
 
 class LangChainProcessor(BaseLLMProcessor):
-    """LLM processor using LangChain"""
+    """LLM processor using LangChain models"""
 
-    def __init__(self, name: str = "langchain", model_name: str = "gpt-3.5-turbo",
-                 temperature: float = 0.0, **kwargs):
+    def __init__(self, name: str = "langchain",
+                 model_name: str = "gpt-3.5-turbo",
+                 api_configs: Optional[Dict[str, Any]] = None,
+                 model_kwargs: Optional[Dict[str, Any]] = None,
+                 **kwargs):
         """
         Initialize LangChain processor.
 
         Args:
             name: Processor name
-            model_name: Name of the language model to use
-            temperature: Temperature for LLM sampling
-            **kwargs: Additional parameters for the LLM
+            model_name: Name of the model to use (e.g., "gpt-3.5-turbo", "claude-3-opus", "gemini-pro")
+            api_configs: API configuration parameters (API keys, etc.)
+            model_kwargs: Additional model parameters (temperature, etc.)
+            **kwargs: Additional processor parameters
         """
         config = {
             "model_name": model_name,
-            "temperature": temperature,
+            "api_configs": api_configs or {},
+            "model_kwargs": model_kwargs or {},
             **kwargs
         }
         super().__init__(name, config)
@@ -41,27 +45,57 @@ class LangChainProcessor(BaseLLMProcessor):
 
     def initialize(self) -> bool:
         """
-        Initialize the processor with LangChain.
+        Initialize the processor with the appropriate LangChain model.
 
         Returns:
             True if initialization was successful
         """
         try:
-            # Abstract method - should be implemented by subclasses
-            return self._setup_llm()
+            # Get model configuration
+            model_name = self.config["model_name"]
+            model_kwargs = self.config["model_kwargs"]
+            api_configs = self.config["api_configs"]
+
+            # Set environment variables for API keys if provided
+            self._setup_api_environment(api_configs)
+
+            # Create the LLM using LangChain's Chat Model
+            self.llm = ChatModel.from_model_name(
+                model_name=model_name,
+                **model_kwargs
+            )
+
+            self._setup_prompts()
+            return True
         except Exception as e:
             self.logger.error(f"Error initializing LangChain processor: {e}")
             return False
 
-    def _setup_llm(self) -> bool:
+    def _setup_api_environment(self, api_configs: Dict[str, Any]) -> None:
         """
-        Set up the LLM and prompt chains.
+        Set up environment variables for API keys.
+        LangChain will use these automatically.
 
-        Returns:
-            True if setup was successful
+        Args:
+            api_configs: API configuration parameters
         """
-        # This should be implemented by subclasses
-        raise NotImplementedError
+        import os
+
+        # Set environment variables for common API providers
+        if "openai_api_key" in api_configs:
+            os.environ["OPENAI_API_KEY"] = api_configs["openai_api_key"]
+
+        if "anthropic_api_key" in api_configs:
+            os.environ["ANTHROPIC_API_KEY"] = api_configs["anthropic_api_key"]
+
+        if "google_api_key" in api_configs:
+            os.environ["GOOGLE_API_KEY"] = api_configs["google_api_key"]
+
+        # Set any other API environment variables
+        for key, value in api_configs.items():
+            if key.endswith("_api_key") and not key in ["openai_api_key", "anthropic_api_key", "google_api_key"]:
+                env_key = key.upper()
+                os.environ[env_key] = value
 
     def _setup_prompts(self) -> None:
         """Set up the prompt templates and chains"""

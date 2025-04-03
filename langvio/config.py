@@ -22,12 +22,25 @@ class Config:
         # Default configuration
         self.config = {
             "llm": {
-                "default": "langchain_openai",
+                "default": "gemini",
                 "models": {
-                    "langchain_openai": {
-                        "type": "langchain",
+                    "gemini": {
+                        "model_name": "gemini-pro",
+                        "api_configs": {
+                            "google_api_key": ""  # Should be set by the user
+                        },
+                        "model_kwargs": {
+                            "temperature": 0.2
+                        }
+                    },
+                    "gpt": {
                         "model_name": "gpt-3.5-turbo",
-                        "temperature": 0.0
+                        "api_configs": {
+                            "openai_api_key": ""  # Should be set by the user
+                        },
+                        "model_kwargs": {
+                            "temperature": 0.0
+                        }
                     }
                 }
             },

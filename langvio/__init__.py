@@ -2,7 +2,11 @@
 langvio: Connect language models to vision models for natural language visual analysis
 """
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
+
+# Try to load environment variables from .env file
+from langvio.utils.env_loader import load_dotenv
+load_dotenv()
 
 from langvio.core.pipeline import Pipeline
 from langvio.core.registry import ModelRegistry
@@ -13,6 +17,7 @@ registry = ModelRegistry()
 # Import main components for easier access
 from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
+from langvio.llm.langchain_models import LangChainProcessor
 
 
 # Default pipeline creator
@@ -30,10 +35,7 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
     """
     from langvio.core.pipeline import Pipeline
 
-    pipeline = Pipeline()
-
-    if config_path:
-        pipeline.load_config(config_path)
+    pipeline = Pipeline(config_path)
 
     if llm_name:
         pipeline.set_llm_processor(llm_name)
@@ -44,9 +46,17 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
     return pipeline
 
 
-# Register default models
-from langvio.llm.langchain_models import OpenAIProcessor
+# Register default processors
 from langvio.vision.yolo.detector import YOLOProcessor
+
+# Register the LangChain processor for different model configurations
+registry.register_llm_processor("gemini", LangChainProcessor, model_name="gemini-pro")  # Default to Gemini
+registry.register_llm_processor("gpt", LangChainProcessor, model_name="gpt-3.5-turbo")
+registry.register_llm_processor("claude", LangChainProcessor, model_name="claude-3-opus-20240229")
+registry.register_llm_processor("mistral", LangChainProcessor, model_name="mistral/mistral-7b-instruct-v0.1")
+
+# Register the YOLO processor
+registry.register_vision_processor("yolo", YOLOProcessor)
 
 # Version info
 __all__ = [
@@ -54,5 +64,6 @@ __all__ = [
     "create_pipeline",
     "registry",
     "BaseLLMProcessor",
-    "BaseVisionProcessor"
+    "BaseVisionProcessor",
+    "LangChainProcessor"
 ]
