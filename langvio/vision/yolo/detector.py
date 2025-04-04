@@ -18,7 +18,7 @@ from langvio.vision.yolo.utils import extract_detections, filter_by_confidence
 class YOLOProcessor(BaseVisionProcessor):
     """Vision processor using YOLO models"""
 
-    def __init__(self, name: str = "yolo", model_path: str = "yolov8n.pt",
+    def __init__(self, name: str = "yolo", model_path: str = "yolov11n.pt",
                  confidence: float = 0.25, **kwargs):
         """
         Initialize YOLO processor.
