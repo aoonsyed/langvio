@@ -3,6 +3,7 @@ Core pipeline for connecting LLMs with vision models
 """
 
 import os
+import sys
 from typing import Dict, Any, Optional, List, Tuple, Union
 import logging
 
@@ -71,8 +72,27 @@ class Pipeline:
         # Get processor config
         processor_config = self.config.get_llm_config(processor_name)
 
+        # Check if the requested processor is available
+        if processor_name not in registry.list_llm_processors():
+            error_msg = (
+                f"ERROR: LLM processor '{processor_name}' not found. "
+                "You may need to install additional dependencies:\n"
+                "- For OpenAI: pip install langvio[openai]\n"
+                "- For Google Gemini: pip install langvio[google]\n"
+                "- For all providers: pip install langvio[all-llm]"
+            )
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
+
         # Create processor
-        self.llm_processor = registry.get_llm_processor(processor_name, **processor_config)
+        try:
+            self.llm_processor = registry.get_llm_processor(processor_name, **processor_config)
+        except Exception as e:
+            error_msg = f"ERROR: Failed to initialize LLM processor '{processor_name}': {e}"
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
     def set_vision_processor(self, processor_name: str) -> None:
         """
@@ -88,8 +108,21 @@ class Pipeline:
         # Get processor config
         processor_config = self.config.get_vision_config(processor_name)
 
+        # Check if the requested processor is available
+        if processor_name not in registry.list_vision_processors():
+            error_msg = f"ERROR: Vision processor '{processor_name}' not found."
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
+
         # Create processor
-        self.vision_processor = registry.get_vision_processor(processor_name, **processor_config)
+        try:
+            self.vision_processor = registry.get_vision_processor(processor_name, **processor_config)
+        except Exception as e:
+            error_msg = f"ERROR: Failed to initialize vision processor '{processor_name}': {e}"
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
     def process(self, query: str, media_path: str) -> Dict[str, Any]:
         """
@@ -109,14 +142,23 @@ class Pipeline:
 
         # Check if processors are set
         if not self.llm_processor:
-            raise ValueError("LLM processor not set")
+            error_msg = "ERROR: LLM processor not set"
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         if not self.vision_processor:
-            raise ValueError("Vision processor not set")
+            error_msg = "ERROR: Vision processor not set"
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         # Check if media file exists
         if not os.path.exists(media_path):
-            raise ValueError(f"Media file not found: {media_path}")
+            error_msg = f"ERROR: Media file not found: {media_path}"
+            self.logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            sys.exit(1)
 
         # Check media type
         is_video = self.media_processor.is_video(media_path)

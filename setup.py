@@ -14,22 +14,28 @@ setup(
         "pyyaml>=5.4.0",
         "langchain>=0.1.0",  # Core LangChain dependency
         "langchain-core>=0.1.0",  # LangChain core components
-        "langchain-community>=0.0.10",  # For community integrations
         "ultralytics>=8.0.0",
         "pillow>=8.0.0",
         "python-dotenv>=0.19.0",  # For loading .env files
     ],
     extras_require={
-        "openai": ["openai>=1.0.0"],
-        "anthropic": ["anthropic>=0.5.0"],
-        "google": ["google-generativeai>=0.3.0"],
-        "all": [
+        # Individual providers
+        "openai": [
             "openai>=1.0.0",
-            "anthropic>=0.5.0",
-            "google-generativeai>=0.3.0",
-            "cohere>=4.0.0",
-            "mistralai>=0.0.7"
+            "langchain-openai>=0.0.1",
         ],
+        "google": [
+            "google-generativeai>=0.3.0",
+            "langchain-google-genai>=0.0.1",
+        ],
+        # Grouped providers
+        "all-llm": [
+            "openai>=1.0.0",
+            "langchain-openai>=0.0.1",
+            "google-generativeai>=0.3.0",
+            "langchain-google-genai>=0.0.1",
+        ],
+        # Development tools
         "dev": [
             "pytest>=6.0.0",
             "black>=21.5b2",
@@ -40,6 +46,10 @@ setup(
     entry_points={
         "console_scripts": [
             "langvio=langvio.cli:main",
+        ],
+        "langvio.llm_processors": [
+            "openai = langvio.llm.openai:OpenAIProcessor [openai]",
+            "google = langvio.llm.google:GeminiProcessor [google]",
         ],
     },
     python_requires=">=3.8",
