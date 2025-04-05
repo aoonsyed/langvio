@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 
 from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from langvio.core.base import Processor
 from langvio.prompts import (
@@ -89,30 +89,19 @@ class BaseLLMProcessor(Processor):
     def _setup_prompts(self) -> None:
         """Set up the prompt templates and chains"""
         # Query parsing prompt
-        self.query_prompt = PromptTemplate(
-            input_variables=["query"],
+        self.query_prompt = ChatPromptTemplate.from_template(
             template=QUERY_PARSING_TEMPLATE
         )
 
-        # Explanation prompt
-        self.explanation_prompt = PromptTemplate(
-            input_variables=["query", "detection_summary"],
+        self.explanation_prompt = ChatPromptTemplate.from_template(
             template=EXPLANATION_TEMPLATE
-        )
-
-        # Video analysis prompt
-        self.video_analysis_prompt = PromptTemplate(
-            input_variables=["query", "video_length", "frames_analyzed",
-                            "frame_rate", "detection_summary", "frame_details"],
-            template=VIDEO_ANALYSIS_TEMPLATE
         )
 
 
 
         # Create chains
-        self.query_chain = LLMChain(llm=self.llm, prompt=self.query_prompt)
-        self.explanation_chain = LLMChain(llm=self.llm, prompt=self.explanation_prompt)
-        self.video_analysis_chain = LLMChain(llm=self.llm, prompt=self.video_analysis_prompt)
+        self.query_chain = self.query_prompt | self.llm  # | output_parser # Optional parser
+        self.explanation_chain = self.explanation_prompt | self.llm  # | output_parser # Optional parser
 
     def parse_query(self, query: str) -> Dict[str, Any]:
         """
@@ -127,8 +116,9 @@ class BaseLLMProcessor(Processor):
         self.logger.info(f"Parsing query: {query}")
 
         try:
-            response = self.query_chain.run(query=query)
-            parsed = json.loads(response.strip())
+            input_data = {"query": query}
+            response = self.query_chain.invoke(input_data)
+            parsed = json.loads(response.content.strip())
             return parsed
         except Exception as e:
             self.logger.error(f"Error parsing query: {e}")
@@ -190,78 +180,8 @@ class BaseLLMProcessor(Processor):
 
             return explanation[:-2] + "."
 
-    def analyze_video(self, query: str, detections: Dict[str, List[Dict[str, Any]]],
-                      video_info: Dict[str, Any]) -> str:
-        """
-        Generate a temporal analysis for video detections.
 
-        Args:
-            query: Original query
-            detections: Detection results
-            video_info: Video metadata like duration, fps, etc.
 
-        Returns:
-            Video analysis explanation
-        """
-        self.logger.info("Generating video analysis")
-
-        # Extract video metadata
-        video_length = video_info.get("duration", 0)
-        frame_rate = video_info.get("fps", 30)
-        frames_analyzed = len(detections)
-
-        # Create detection summary
-        detection_summary = self._summarize_detections(detections)
-
-        # Create frame-by-frame details
-        frame_details = self._create_frame_details(detections)
-
-        try:
-            analysis = self.video_analysis_chain.run(
-                query=query,
-                video_length=video_length,
-                frames_analyzed=frames_analyzed,
-                frame_rate=frame_rate,
-                detection_summary=detection_summary,
-                frame_details=frame_details
-            )
-            return analysis.strip()
-        except Exception as e:
-            self.logger.error(f"Error generating video analysis: {e}")
-            return f"Video analysis could not be generated. Analyzed {frames_analyzed} frames."
-
-    def analyze_spatial_relationships(self, query: str, detections: Dict[str, List[Dict[str, Any]]],
-                                    target_relationships: List[str] = None) -> str:
-        """
-        Analyze spatial relationships between detected objects.
-
-        Args:
-            query: Original query
-            detections: Detection results
-            target_relationships: Specific relationships to analyze
-
-        Returns:
-            Spatial analysis explanation
-        """
-        self.logger.info("Analyzing spatial relationships between objects")
-
-        # Format object positions
-        object_positions = self._format_object_positions(detections)
-
-        # Default target relationships if none specified
-        if not target_relationships:
-            target_relationships = ["next to", "above", "below", "inside", "contains"]
-
-        try:
-            analysis = self.spatial_analysis_chain.run(
-                query=query,
-                object_positions=object_positions,
-                target_relationships=", ".join(target_relationships)
-            )
-            return analysis.strip()
-        except Exception as e:
-            self.logger.error(f"Error generating spatial analysis: {e}")
-            return "Could not analyze spatial relationships between objects."
 
     def _summarize_detections(self, detections: Dict[str, List[Dict[str, Any]]]) -> str:
         """
@@ -294,67 +214,6 @@ class BaseLLMProcessor(Processor):
             summary_lines.append(f"Total frames analyzed: {total_frames}")
 
         return "\n".join(summary_lines)
-
-    def _create_frame_details(self, detections: Dict[str, List[Dict[str, Any]]]) -> str:
-        """
-        Create a frame-by-frame summary of notable detections.
-
-        Args:
-            detections: Detection results
-
-        Returns:
-            Frame details string
-        """
-        frame_details = []
-
-        # Get a subset of frames to avoid overwhelming the LLM
-        frame_keys = sorted(detections.keys(), key=lambda x: int(x))
-        sample_keys = frame_keys[::max(1, len(frame_keys) // 10)]  # Sample ~10 frames
-
-        for frame_id in sample_keys:
-            frame_detections = detections[frame_id]
-            if not frame_detections:
-                continue
-
-            # Format frame summary
-            frame_lines = [f"Frame {frame_id}:"]
-            for det in frame_detections:
-                conf_pct = f"{det['confidence']*100:.1f}%"
-                frame_lines.append(f"- {det['label']} ({conf_pct}) at position {det['bbox']}")
-
-            frame_details.append("\n".join(frame_lines))
-
-        return "\n\n".join(frame_details)
-
-    def _format_object_positions(self, detections: Dict[str, List[Dict[str, Any]]]) -> str:
-        """
-        Format object positions for spatial analysis.
-
-        Args:
-            detections: Detection results
-
-        Returns:
-            Formatted object positions string
-        """
-        positions = []
-
-        # For images, use the first frame
-        frame_id = "0" if "0" in detections else list(detections.keys())[0]
-        frame_detections = detections[frame_id]
-
-        for i, det in enumerate(frame_detections):
-            x1, y1, x2, y2 = det["bbox"]
-            center_x = (x1 + x2) // 2
-            center_y = (y1 + y2) // 2
-            width = x2 - x1
-            height = y2 - y1
-
-            positions.append(
-                f"Object {i+1}: {det['label']} at center ({center_x}, {center_y}), "
-                f"width {width}, height {height}"
-            )
-
-        return "\n".join(positions)
 
     def is_package_installed(self, package_name: str) -> bool:
         """

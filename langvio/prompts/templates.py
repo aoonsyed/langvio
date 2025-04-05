@@ -8,12 +8,16 @@ Translate the following natural language query about images/videos into structur
 
 Query: {query}
 
-Return a JSON with these fields:
-- target_objects: List of object categories to detect (e.g., "person", "car", "dog", etc.)
+You must respond with valid JSON only. Do not include any other text. Do not explain. Do not greet. Do not mention the user. Only JSON.
+
+The JSON response must have the following fields:
+
+- target_objects: List of object categories to detect (e.g., \"person\", \"car\", \"dog\", etc.)
 - count_objects: Boolean indicating if counting is needed
-- task_type: One of "identification", "counting", "verification", "analysis"
-- attributes: Any specific attributes to look for (e.g., "color", "size", "activity")
-- spatial_relations: Any spatial relationships to check (e.g., "next to", "on top of")
+- task_type: One of \"identification\", \"counting\", \"verification\", \"analysis\"
+- attributes: Any specific attributes to look for (e.g., \"color\", \"size\", \"activity\")
+- spatial_relations: Any spatial relationships to check (e.g., \"next to\", \"on top of\")
+
 
 JSON response:
 """
@@ -32,24 +36,4 @@ Focus on answering their specific question or fulfilling their request.
 Explanation:
 """
 
-# Video analysis prompt template
-VIDEO_ANALYSIS_TEMPLATE = """
-Analyze the following video detection results to identify patterns and changes over time.
-
-User query: {query}
-Video length: {video_length} seconds
-Frames analyzed: {frames_analyzed}
-Frame rate: {frame_rate} fps
-
-Detection summary:
-{detection_summary}
-
-Frame-by-frame notable objects:
-{frame_details}
-
-Provide an analysis that captures temporal patterns relevant to the user's query.
-Focus on movements, appearances/disappearances, and changes in object positions over time.
-
-Analysis:
-"""
 
