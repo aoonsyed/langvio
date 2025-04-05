@@ -41,12 +41,6 @@ class GeminiProcessor(BaseLLMProcessor):
         This is the only method that needs to be implemented.
         """
         try:
-            # Check if Google Generative AI and LangChain wrapper are installed
-            if not self.is_package_installed("google_generativeai"):
-                raise ImportError(
-                    "The 'google-generativeai' package is required to use Gemini models. "
-                    "Please install it with 'pip install langvio[google]'"
-                )
 
             if not self.is_package_installed("langchain_google_genai"):
                 raise ImportError(

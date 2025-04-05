@@ -88,6 +88,10 @@ class Pipeline:
         # Create processor
         try:
             self.llm_processor = registry.get_llm_processor(processor_name, **processor_config)
+
+            # Explicitly initialize the processor
+            self.llm_processor.initialize()
+
         except Exception as e:
             error_msg = f"ERROR: Failed to initialize LLM processor '{processor_name}': {e}"
             self.logger.error(error_msg)
