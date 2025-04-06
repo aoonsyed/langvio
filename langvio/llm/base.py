@@ -1,5 +1,5 @@
 """
-Base classes for LLM processors with improved modular design
+Base classes for LLM processors with streamlined design
 """
 
 import json
@@ -8,54 +8,40 @@ import importlib.util
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 
-from langchain.chains import LLMChain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.output_parsers.json import SimpleJsonOutputParser
 
 from langvio.core.base import Processor
 from langvio.prompts import (
     QUERY_PARSING_TEMPLATE,
     EXPLANATION_TEMPLATE,
-    VIDEO_ANALYSIS_TEMPLATE
 )
+from langvio.prompts.constants import SYSTEM_PROMPT, FORMAT_INSTRUCTION_QUERY, FORMAT_INSTRUCTIONS_EXPLANATION
 
 
 class BaseLLMProcessor(Processor):
     """Base class for all LLM processors"""
 
     def __init__(self, name: str, config: Optional[Dict[str, Any]] = None):
-        """
-        Initialize LLM processor.
-
-        Args:
-            name: Processor name
-            config: Configuration parameters
-        """
+        """Initialize LLM processor."""
         super().__init__(name, config)
-        self.model = None
         self.logger = logging.getLogger(__name__)
         self.llm = None
-        self.query_chain = None
-        self.explanation_chain = None
-        self.video_analysis_chain = None
-        self.spatial_analysis_chain = None
+        self.query_chat_prompt = None
+        self.explanation_chat_prompt = None
 
     def initialize(self) -> bool:
-        """
-        Initialize the processor with its configuration.
-        This is a concrete implementation that calls the abstract _initialize_llm() method.
-
-        Returns:
-            True if initialization was successful
-        """
+        """Initialize the processor with its configuration."""
         try:
-            # Set up API environment variables
+            # Set up API environment variables if provided
             if "api_configs" in self.config:
                 self._setup_api_environment(self.config.get("api_configs", {}))
 
-            # Initialize the specific LLM implementation (implemented by subclasses)
+            # Initialize the specific LLM implementation
             self._initialize_llm()
 
-            # Set up prompts and chains
+            # Set up prompts
             self._setup_prompts()
 
             return True
@@ -65,70 +51,69 @@ class BaseLLMProcessor(Processor):
 
     @abstractmethod
     def _initialize_llm(self) -> None:
-        """
-        Initialize the specific LLM implementation.
-        This is the only method that subclasses must implement.
-        """
+        """Initialize the specific LLM implementation."""
         pass
 
     def _setup_api_environment(self, api_configs: Dict[str, Any]) -> None:
-        """
-        Set up environment variables for API keys.
-
-        Args:
-            api_configs: API configuration parameters
-        """
+        """Set up environment variables for API keys."""
         import os
-
-        # Set environment variables for API keys
         for key, value in api_configs.items():
             if key.endswith("_api_key") and value:
-                env_key = key.upper()
-                os.environ[env_key] = value
+                os.environ[key.upper()] = value
 
     def _setup_prompts(self) -> None:
-        """Set up the prompt templates and chains"""
+        """Set up the prompt templates with system message."""
+        system_message = SystemMessage(content=SYSTEM_PROMPT)
+
         # Query parsing prompt
-        self.query_prompt = ChatPromptTemplate.from_template(
-            template=QUERY_PARSING_TEMPLATE
-        )
+        self.query_chat_prompt = ChatPromptTemplate.from_messages([
+            system_message,
+            MessagesPlaceholder(variable_name="history"),
+            HumanMessage(content=f"TASK: PARSE QUERY\n\n{QUERY_PARSING_TEMPLATE} \n\n{FORMAT_INSTRUCTION_QUERY}")
+        ])
 
-        self.explanation_prompt = ChatPromptTemplate.from_template(
-            template=EXPLANATION_TEMPLATE
-        )
-
-
+        # Explanation prompt
+        self.explanation_chat_prompt = ChatPromptTemplate.from_messages([
+            system_message,
+            MessagesPlaceholder(variable_name="history"),
+            HumanMessage(content=f"TASK: GENERATE EXPLANATION\n\n{EXPLANATION_TEMPLATE} \n\n {FORMAT_INSTRUCTIONS_EXPLANATION}")
+        ])
 
         # Create chains
-        self.query_chain = self.query_prompt | self.llm  # | output_parser # Optional parser
-        self.explanation_chain = self.explanation_prompt | self.llm  # | output_parser # Optional parser
+        json_parser = SimpleJsonOutputParser()
+        self.query_chain = self.query_chat_prompt | self.llm | json_parser
+        self.explanation_chain = self.explanation_chat_prompt | self.llm | json_parser
 
     def parse_query(self, query: str) -> Dict[str, Any]:
-        """
-        Parse a natural language query into structured parameters.
-
-        Args:
-            query: Natural language query
-
-        Returns:
-            Dictionary with structured parameters
-        """
+        """Parse a natural language query into structured parameters."""
         self.logger.info(f"Parsing query: {query}")
 
         try:
-            input_data = {"query": query}
-            response = self.query_chain.invoke(input_data)
-            parsed = json.loads(response.content.strip())
+
+
+            # Invoke the chain with proper output parsing
+            parsed = self.query_chain.invoke({"query": query, "history": []})
+
+            # Ensure required fields exist
+            if "target_objects" not in parsed:
+                parsed["target_objects"] = []
+            if "count_objects" not in parsed:
+                parsed["count_objects"] = False
+            if "task_type" not in parsed:
+                parsed["task_type"] = "identification"
+            if "attributes" not in parsed:
+                parsed["attributes"] = []
+            if "spatial_relations" not in parsed:
+                parsed["spatial_relations"] = []
+
             return parsed
+
         except Exception as e:
             self.logger.error(f"Error parsing query: {e}")
 
-            # Fallback: extract target objects from query directly
+            # Fallback to simple extraction
             target_objects = self._extract_target_objects(query)
-
-            # Determine if query is asking for counting
-            counting = any(word in query.lower() for word in
-                           ["count", "how many", "number of"])
+            counting = any(word in query.lower() for word in ["count", "how many", "number of"])
 
             return {
                 "target_objects": target_objects,
@@ -139,27 +124,23 @@ class BaseLLMProcessor(Processor):
             }
 
     def generate_explanation(self, query: str, detections: Dict[str, List[Dict[str, Any]]]) -> str:
-        """
-        Generate an explanation based on detection results.
-
-        Args:
-            query: Original query
-            detections: Detection results
-
-        Returns:
-            Human-readable explanation
-        """
+        """Generate an explanation based on detection results."""
         self.logger.info("Generating explanation for detection results")
 
         # Create a summary of detections
         detection_summary = self._summarize_detections(detections)
 
         try:
-            explanation = self.explanation_chain.run(
-                query=query,
-                detection_summary=detection_summary
-            )
-            return explanation.strip()
+            # Invoke the model with the explanation chat prompt
+            # Invoke the explanation chain
+            response = self.explanation_chain.invoke({
+                "query": query,
+                "detection_summary": detection_summary,
+                "history": []
+            })
+
+            return response
+
         except Exception as e:
             self.logger.error(f"Error generating explanation: {e}")
 
@@ -173,70 +154,41 @@ class BaseLLMProcessor(Processor):
             if not object_counts:
                 return "No objects of interest were detected."
 
-            # Format basic explanation
-            explanation = "Analysis results: "
-            for label, count in object_counts.items():
-                explanation += f"{count} {label}{'s' if count > 1 else ''}, "
-
-            return explanation[:-2] + "."
-
-
-
+            explanation = "Analysis results: " + ", ".join(
+                f"{count} {label}{'s' if count > 1 else ''}"
+                for label, count in object_counts.items()
+            )
+            return explanation + "."
 
     def _summarize_detections(self, detections: Dict[str, List[Dict[str, Any]]]) -> str:
-        """
-        Create a summary of detections for the LLM to explain.
-
-        Args:
-            detections: Detection results
-
-        Returns:
-            Summary string
-        """
+        """Create a summary of detections for the LLM to explain."""
         # Count objects by label
         label_counts = {}
         total_frames = len(detections)
 
-        for frame_id, frame_detections in detections.items():
+        for frame_detections in detections.values():
             for det in frame_detections:
                 label = det["label"]
                 label_counts[label] = label_counts.get(label, 0) + 1
 
         # Format summary
-        summary_lines = []
+        summary_lines = [
+            f"{label}: {count} instances detected"
+            for label, count in label_counts.items()
+        ]
 
-        # Add total counts
-        for label, count in label_counts.items():
-            summary_lines.append(f"{label}: {count} instances detected")
-
-        # Add media type info
+        # Add media type info for videos
         if total_frames > 1:
             summary_lines.append(f"Total frames analyzed: {total_frames}")
 
         return "\n".join(summary_lines)
 
     def is_package_installed(self, package_name: str) -> bool:
-        """
-        Check if a Python package is installed.
-
-        Args:
-            package_name: Name of the package to check
-
-        Returns:
-            True if the package is installed, False otherwise
-        """
+        """Check if a Python package is installed."""
         return importlib.util.find_spec(package_name) is not None
 
     def _extract_target_objects(self, query: str) -> List[str]:
-        """
-        Extract target objects from a query (fallback method).
-
-        Args:
-            query: Natural language query
-
-        Returns:
-            List of target object names
-        """
+        """Extract target objects from a query (fallback method)."""
         # Common object categories in COCO dataset
         common_objects = [
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
@@ -254,16 +206,9 @@ class BaseLLMProcessor(Processor):
             "scissors", "teddy bear", "hair drier", "toothbrush"
         ]
 
-        # Find which common objects appear in the query
+        # Find objects in the query
         query_lower = query.lower()
-        found_objects = []
+        found_objects = [obj for obj in common_objects if obj in query_lower]
 
-        for obj in common_objects:
-            if obj in query_lower:
-                found_objects.append(obj)
-
-        # If no objects found, return a default
-        if not found_objects:
-            return ["person", "car"]
-
-        return found_objects
+        # Return defaults if no objects found
+        return found_objects if found_objects else ["person", "car"]
