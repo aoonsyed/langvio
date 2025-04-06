@@ -16,9 +16,8 @@ from langvio.core.base import Processor
 from langvio.prompts import (
     QUERY_PARSING_TEMPLATE,
     EXPLANATION_TEMPLATE,
+    SYSTEM_PROMPT
 )
-from langvio.prompts.constants import SYSTEM_PROMPT, FORMAT_INSTRUCTION_QUERY, FORMAT_INSTRUCTIONS_EXPLANATION
-
 
 class BaseLLMProcessor(Processor):
     """Base class for all LLM processors"""
@@ -69,14 +68,15 @@ class BaseLLMProcessor(Processor):
         self.query_chat_prompt = ChatPromptTemplate.from_messages([
             system_message,
             MessagesPlaceholder(variable_name="history"),
-            HumanMessage(content=f"TASK: PARSE QUERY\n\n{QUERY_PARSING_TEMPLATE} \n\n{FORMAT_INSTRUCTION_QUERY}")
+            # ("user",f"TASK: PARSE QUERY\n\n{QUERY_PARSING_TEMPLATE} \n\n{FORMAT_INSTRUCTION_QUERY}")
+            ("user", QUERY_PARSING_TEMPLATE)
         ])
 
         # Explanation prompt
         self.explanation_chat_prompt = ChatPromptTemplate.from_messages([
             system_message,
             MessagesPlaceholder(variable_name="history"),
-            HumanMessage(content=f"TASK: GENERATE EXPLANATION\n\n{EXPLANATION_TEMPLATE} \n\n {FORMAT_INSTRUCTIONS_EXPLANATION}")
+            ("user", EXPLANATION_TEMPLATE)
         ])
 
         # Create chains
