@@ -1,5 +1,5 @@
 """
-Core pipeline for connecting LLMs with vision models
+Enhanced core pipeline for connecting LLMs with vision models
 """
 
 import os
@@ -12,10 +12,11 @@ from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
 from langvio.media.processor import MediaProcessor
 from langvio.utils.logging import setup_logging
+from langvio.utils.file_utils import is_image_file, is_video_file
 
 
 class Pipeline:
-    """Main pipeline for processing queries with LLMs and vision models"""
+    """Enhanced main pipeline for processing queries with LLMs and vision models"""
 
     def __init__(self, config_path: Optional[str] = None):
         """
@@ -36,7 +37,7 @@ class Pipeline:
         self.vision_processor = None
         self.media_processor = MediaProcessor(self.config.get_media_config())
 
-        self.logger.info("Pipeline initialized")
+        self.logger.info("Enhanced Pipeline initialized")
 
     def load_config(self, config_path: str) -> None:
         """
@@ -130,7 +131,7 @@ class Pipeline:
 
     def process(self, query: str, media_path: str) -> Dict[str, Any]:
         """
-        Process a query on media.
+        Process a query on media with enhanced capabilities.
 
         Args:
             query: Natural language query
@@ -165,29 +166,38 @@ class Pipeline:
             sys.exit(1)
 
         # Check media type
-        is_video = self.media_processor.is_video(media_path)
+        is_video = is_video_file(media_path)
         media_type = "video" if is_video else "image"
 
         # Process query with LLM
         query_params = self.llm_processor.parse_query(query)
+        self.logger.info(f"Parsed query params: {query_params}")
 
         # Run detection with vision processor
         if is_video:
-            detections = self.vision_processor.process_video(media_path, query_params)
+            # For video processing, check if we need to adjust sample rate based on task
+            sample_rate = 5  # Default
+            if query_params.get("task_type") in ["tracking", "activity"]:
+                # Use a more frequent sampling for tracking and activity detection
+                sample_rate = 2
+
+            detections = self.vision_processor.process_video(media_path, query_params, sample_rate)
         else:
             detections = self.vision_processor.process_image(media_path, query_params)
 
         # Generate explanation
         explanation = self.llm_processor.generate_explanation(query, detections)
 
-        # Generate output
+        # Generate output path
         output_path = self.media_processor.get_output_path(media_path)
 
-        # Visualize results
+        # Visualize results with appropriate visualization based on task type
+        visualization_config = self._get_visualization_config(query_params)
+
         if is_video:
-            self.media_processor.visualize_video(media_path, output_path, detections)
+            self.media_processor.visualize_video(media_path, output_path, detections, **visualization_config)
         else:
-            self.media_processor.visualize_image(media_path, output_path, detections["0"])
+            self.media_processor.visualize_image(media_path, output_path, detections["0"], **visualization_config)
 
         # Prepare result
         result = {
@@ -203,3 +213,39 @@ class Pipeline:
         self.logger.info(f"Processed query successfully: {len(detections)} detection sets")
 
         return result
+
+    def _get_visualization_config(self, query_params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Get visualization configuration based on query parameters.
+
+        Args:
+            query_params: Query parameters from LLM processor
+
+        Returns:
+            Visualization configuration parameters
+        """
+        # Get default visualization config
+        viz_config = self.config.config["media"]["visualization"].copy()
+
+        # Customize based on task type
+        task_type = query_params.get("task_type", "identification")
+
+        if task_type == "counting":
+            # For counting tasks, use a different color
+            viz_config["box_color"] = [255, 0, 0]  # Red for counting
+
+        elif task_type == "verification":
+            # For verification tasks, use a different color
+            viz_config["box_color"] = [0, 0, 255]  # Blue for verification
+
+        elif task_type in ["tracking", "activity"]:
+            # For tracking/activity tasks, use a more visible color
+            viz_config["box_color"] = [255, 165, 0]  # Orange for tracking/activity
+            viz_config["line_thickness"] = 3  # Thicker lines
+
+        # If specific attributes were requested, adjust the visualization
+        if query_params.get("attributes"):
+            # If looking for specific attributes, highlight them more
+            viz_config["line_thickness"] += 1
+
+        return viz_config

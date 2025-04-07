@@ -1,26 +1,33 @@
 """
-Base classes for LLM processors with streamlined design
+Enhanced base classes for LLM processors with expanded capabilities
 """
 
 import json
 import logging
 import importlib.util
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.output_parsers.json import SimpleJsonOutputParser
 
 from langvio.core.base import Processor
-from langvio.prompts import (
+from langvio.prompts.templates import (
     QUERY_PARSING_TEMPLATE,
     EXPLANATION_TEMPLATE,
     SYSTEM_PROMPT
 )
+from langvio.prompts.constants import (
+    TASK_TYPES,
+    VISUAL_ATTRIBUTES,
+    SPATIAL_RELATIONS,
+    ACTIVITIES,
+    COMMON_OBJECTS
+)
 
 class BaseLLMProcessor(Processor):
-    """Base class for all LLM processors"""
+    """Enhanced base class for all LLM processors"""
 
     def __init__(self, name: str, config: Optional[Dict[str, Any]] = None):
         """Initialize LLM processor."""
@@ -68,7 +75,6 @@ class BaseLLMProcessor(Processor):
         self.query_chat_prompt = ChatPromptTemplate.from_messages([
             system_message,
             MessagesPlaceholder(variable_name="history"),
-            # ("user",f"TASK: PARSE QUERY\n\n{QUERY_PARSING_TEMPLATE} \n\n{FORMAT_INSTRUCTION_QUERY}")
             ("user", QUERY_PARSING_TEMPLATE)
         ])
 
@@ -89,22 +95,14 @@ class BaseLLMProcessor(Processor):
         self.logger.info(f"Parsing query: {query}")
 
         try:
-
-
             # Invoke the chain with proper output parsing
             parsed = self.query_chain.invoke({"query": query, "history": []})
 
-            # Ensure required fields exist
-            if "target_objects" not in parsed:
-                parsed["target_objects"] = []
-            if "count_objects" not in parsed:
-                parsed["count_objects"] = False
-            if "task_type" not in parsed:
-                parsed["task_type"] = "identification"
-            if "attributes" not in parsed:
-                parsed["attributes"] = []
-            if "spatial_relations" not in parsed:
-                parsed["spatial_relations"] = []
+            # Ensure all required fields exist with defaults
+            parsed = self._ensure_parsed_fields(parsed)
+
+            # Log the parsed query
+            self.logger.debug(f"Parsed query: {json.dumps(parsed, indent=2)}")
 
             return parsed
 
@@ -112,30 +110,125 @@ class BaseLLMProcessor(Processor):
             self.logger.error(f"Error parsing query: {e}")
 
             # Fallback to simple extraction
-            target_objects = self._extract_target_objects(query)
-            counting = any(word in query.lower() for word in ["count", "how many", "number of"])
+            return self._fallback_query_parsing(query)
 
-            return {
-                "target_objects": target_objects,
-                "count_objects": counting,
-                "task_type": "counting" if counting else "identification",
-                "attributes": [],
-                "spatial_relations": []
-            }
+    def _ensure_parsed_fields(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
+        """Ensure all required fields exist in the parsed query."""
+        defaults = {
+            "target_objects": [],
+            "count_objects": False,
+            "task_type": "identification",
+            "attributes": [],
+            "spatial_relations": [],
+            "activities": [],
+            "custom_instructions": ""
+        }
+
+        # Add any missing fields with defaults
+        for key, default_value in defaults.items():
+            if key not in parsed or parsed[key] is None:
+                parsed[key] = default_value
+
+        # Ensure task_type is valid
+        if parsed["task_type"] not in TASK_TYPES:
+            self.logger.warning(f"Invalid task type: {parsed['task_type']}. Using 'identification' instead.")
+            parsed["task_type"] = "identification"
+
+        return parsed
+
+    def _fallback_query_parsing(self, query: str) -> Dict[str, Any]:
+        """Simple fallback method for query parsing when LLM fails."""
+        self.logger.info("Using fallback query parsing")
+
+        # Default values
+        parsed = {
+            "target_objects": [],
+            "count_objects": False,
+            "task_type": "identification",
+            "attributes": [],
+            "spatial_relations": [],
+            "activities": [],
+            "custom_instructions": ""
+        }
+
+        # Lowercased query for matching
+        query_lower = query.lower()
+
+        # Extract target objects
+        parsed["target_objects"] = self._extract_target_objects(query)
+
+        # Detect if counting is needed
+        counting_terms = ["count", "how many", "number of", "total"]
+        parsed["count_objects"] = any(term in query_lower for term in counting_terms)
+
+        # Determine task type
+        if parsed["count_objects"]:
+            parsed["task_type"] = "counting"
+        elif any(term in query_lower for term in ["is there", "are there", "can you see", "do you see"]):
+            parsed["task_type"] = "verification"
+        elif any(term in query_lower for term in ["track", "follow", "movement"]):
+            parsed["task_type"] = "tracking"
+        elif any(term in query_lower for term in ["activity", "doing", "action", "behavior"]):
+            parsed["task_type"] = "activity"
+
+        # Check for attribute terms
+        for attr in VISUAL_ATTRIBUTES:
+            if attr in query_lower:
+                # Simple extraction of potential values
+                words = query_lower.split()
+                attr_idx = -1
+
+                for i, word in enumerate(words):
+                    if attr in word:
+                        attr_idx = i
+                        break
+
+                if attr_idx >= 0 and attr_idx < len(words) - 1:
+                    # Take the next word as a potential value
+                    value = words[attr_idx + 1].strip(",.:;?!")
+                    parsed["attributes"].append({"attribute": attr, "value": value})
+
+        # Check for spatial relation terms
+        for relation in SPATIAL_RELATIONS:
+            relation_term = relation.replace("_", " ")
+            if relation_term in query_lower:
+                # Find potential object after the relation
+                rel_idx = query_lower.find(relation_term) + len(relation_term)
+                if rel_idx < len(query_lower):
+                    # Extract text after the relation term
+                    after_text = query_lower[rel_idx:].strip()
+                    # Find the first potential object word
+                    for obj in COMMON_OBJECTS:
+                        if obj in after_text:
+                            parsed["spatial_relations"].append({
+                                "relation": relation,
+                                "object": obj
+                            })
+                            break
+
+        # Check for activity terms
+        for activity in ACTIVITIES:
+            if activity in query_lower:
+                parsed["activities"].append(activity)
+
+        return parsed
 
     def generate_explanation(self, query: str, detections: Dict[str, List[Dict[str, Any]]]) -> str:
         """Generate an explanation based on detection results."""
         self.logger.info("Generating explanation for detection results")
 
+        # Get the original parsed query
+        parsed_query = self.parse_query(query)
+
         # Create a summary of detections
-        detection_summary = self._summarize_detections(detections)
+        detection_summary = self._summarize_detections(detections, parsed_query)
 
         try:
-            # Invoke the model with the explanation chat prompt
             # Invoke the explanation chain
             response = self.explanation_chain.invoke({
                 "query": query,
                 "detection_summary": detection_summary,
+                "parsed_query": json.dumps(parsed_query, indent=2),
                 "history": []
             })
 
@@ -143,72 +236,66 @@ class BaseLLMProcessor(Processor):
 
         except Exception as e:
             self.logger.error(f"Error generating explanation: {e}")
+            return self._fallback_explanation(detections, parsed_query)
 
-            # Simple fallback explanation
-            object_counts = {}
-            for frame_detections in detections.values():
-                for det in frame_detections:
-                    label = det["label"]
-                    object_counts[label] = object_counts.get(label, 0) + 1
+    def _fallback_explanation(self, detections: Dict[str, List[Dict[str, Any]]],
+                             parsed_query: Dict[str, Any]) -> str:
+        """Simple fallback method for explanation generation when LLM fails."""
+        self.logger.info("Using fallback explanation generation")
 
-            if not object_counts:
-                return "No objects of interest were detected."
-
-            explanation = "Analysis results: " + ", ".join(
-                f"{count} {label}{'s' if count > 1 else ''}"
-                for label, count in object_counts.items()
-            )
-            return explanation + "."
-
-    def _summarize_detections(self, detections: Dict[str, List[Dict[str, Any]]]) -> str:
-        """Create a summary of detections for the LLM to explain."""
-        # Count objects by label
-        label_counts = {}
-        total_frames = len(detections)
-
+        # Get counts of detected objects
+        object_counts = {}
         for frame_detections in detections.values():
             for det in frame_detections:
                 label = det["label"]
-                label_counts[label] = label_counts.get(label, 0) + 1
+                object_counts[label] = object_counts.get(label, 0) + 1
 
-        # Format summary
-        summary_lines = [
-            f"{label}: {count} instances detected"
-            for label, count in label_counts.items()
-        ]
+        # Create a simple explanation based on task type
+        task_type = parsed_query.get("task_type", "identification")
+        target_objects = parsed_query.get("target_objects", [])
 
-        # Add media type info for videos
-        if total_frames > 1:
-            summary_lines.append(f"Total frames analyzed: {total_frames}")
+        if not object_counts:
+            # No detections
+            if target_objects:
+                objects_str = ", ".join(target_objects)
+                return f"I did not detect any {objects_str} in the {'video' if len(detections) > 1 else 'image'}."
+            else:
+                return "No objects of interest were detected."
 
-        return "\n".join(summary_lines)
+        if task_type == "counting":
+            # For counting tasks
+            count_explanations = []
+            for label, count in object_counts.items():
+                if not target_objects or label in target_objects:
+                    count_explanations.append(f"{count} {label}{'s' if count > 1 else ''}")
 
-    def is_package_installed(self, package_name: str) -> bool:
-        """Check if a Python package is installed."""
-        return importlib.util.find_spec(package_name) is not None
+            return "I found " + ", ".join(count_explanations) + "."
 
-    def _extract_target_objects(self, query: str) -> List[str]:
-        """Extract target objects from a query (fallback method)."""
-        # Common object categories in COCO dataset
-        common_objects = [
-            "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
-            "truck", "boat", "traffic light", "fire hydrant", "stop sign",
-            "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep",
-            "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-            "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-            "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-            "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-            "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
-            "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
-            "couch", "potted plant", "bed", "dining table", "toilet", "tv",
-            "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave",
-            "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-            "scissors", "teddy bear", "hair drier", "toothbrush"
-        ]
+        elif task_type == "verification":
+            # For verification tasks
+            verified_objects = [label for label in target_objects if label in object_counts]
 
-        # Find objects in the query
-        query_lower = query.lower()
-        found_objects = [obj for obj in common_objects if obj in query_lower]
+            if verified_objects:
+                return f"Yes, I found {', '.join(verified_objects)} in the {'video' if len(detections) > 1 else 'image'}."
+            else:
+                return f"No, I did not find {', '.join(target_objects)} in the {'video' if len(detections) > 1 else 'image'}."
 
-        # Return defaults if no objects found
-        return found_objects if found_objects else ["person", "car"]
+        elif task_type == "tracking" or task_type == "activity":
+            # For tracking/activity tasks
+            activity_str = ""
+            if parsed_query.get("activities"):
+                activity_str = f" {', '.join(parsed_query['activities'])}"
+
+            object_str = ", ".join(target_objects) if target_objects else "objects"
+
+            return f"I tracked {sum(object_counts.values())} instances of {object_str}{activity_str} across {len(detections)} frames."
+
+        else:
+            # Default identification task
+            explanation = "Analysis results: " + ", ".join(
+                f"{count} {label}{'s' if count > 1 else ''}"
+                for label, count in object_counts.items()
+                if not target_objects or label in target_objects
+            )
+
+            return explanation + "."

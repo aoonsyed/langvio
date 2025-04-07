@@ -1,5 +1,5 @@
 """
-YOLO-based vision processor
+Enhanced YOLO-based vision processor
 """
 
 import os
@@ -12,14 +12,20 @@ import numpy as np
 from ultralytics import YOLO
 
 from langvio.vision.base import BaseVisionProcessor
-from langvio.vision.yolo.utils import extract_detections, filter_by_confidence
+from langvio.vision.utils import extract_detections
+from langvio.prompts.constants import (
+    DEFAULT_CONFIDENCE_THRESHOLD,
+    DEFAULT_VIDEO_SAMPLE_RATE
+)
 
 
 class YOLOProcessor(BaseVisionProcessor):
-    """Vision processor using YOLO models"""
+    """Enhanced vision processor using YOLO models"""
 
-    def __init__(self, name: str = "yolo", model_path: str = "yolov11n.pt",
-                 confidence: float = 0.25, **kwargs):
+    def __init__(self, name: str = "yolo",
+                 model_path: str = "yolov8n.pt",
+                 confidence: float = DEFAULT_CONFIDENCE_THRESHOLD,
+                 **kwargs):
         """
         Initialize YOLO processor.
 
@@ -55,7 +61,7 @@ class YOLOProcessor(BaseVisionProcessor):
 
     def process_image(self, image_path: str, query_params: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Process an image with YOLO.
+        Process an image with YOLO with enhanced detection capabilities.
 
         Args:
             image_path: Path to the input image
@@ -72,11 +78,24 @@ class YOLOProcessor(BaseVisionProcessor):
 
         # Run detection
         try:
+            # Get image dimensions for relative positioning
+            image_dimensions = self._get_image_dimensions(image_path)
+
+            # Run basic object detection
             results = self.model(image_path, conf=self.config["confidence"])
 
             # Extract and filter detections
             detections = extract_detections(results)
-            filtered_detections = self._filter_detections(detections, query_params)
+
+            # Enhance detections with attributes based on the image
+            detections = self._enhance_detections_with_attributes(detections, image_path)
+
+            # Filter detections based on query parameters
+            filtered_detections = self._filter_detections(
+                detections,
+                query_params,
+                image_dimensions
+            )
 
             # Return results (use "0" as the frame key for images)
             return {"0": filtered_detections}
@@ -85,9 +104,9 @@ class YOLOProcessor(BaseVisionProcessor):
             return {"0": []}
 
     def process_video(self, video_path: str, query_params: Dict[str, Any],
-                      sample_rate: int = 5) -> Dict[str, List[Dict[str, Any]]]:
+                      sample_rate: int = DEFAULT_VIDEO_SAMPLE_RATE) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Process a video with YOLO.
+        Process a video with YOLO with enhanced activity and tracking detection.
 
         Args:
             video_path: Path to the input video
@@ -109,6 +128,11 @@ class YOLOProcessor(BaseVisionProcessor):
             if not cap.isOpened():
                 raise ValueError(f"Failed to open video: {video_path}")
 
+            # Get video dimensions
+            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            video_dimensions = (width, height)
+
             # Process frames
             frame_detections = {}
             frame_idx = 0
@@ -129,9 +153,18 @@ class YOLOProcessor(BaseVisionProcessor):
                     # Run detection
                     results = self.model(temp_path, conf=self.config["confidence"])
 
-                    # Extract and filter detections
+                    # Extract detections
                     detections = extract_detections(results)
-                    filtered_detections = self._filter_detections(detections, query_params)
+
+                    # Enhance detections with attributes
+                    detections = self._enhance_detections_with_attributes(detections, temp_path)
+
+                    # Apply filtering based on query parameters
+                    filtered_detections = self._filter_detections(
+                        detections,
+                        query_params,
+                        video_dimensions
+                    )
 
                     # Store results
                     frame_detections[str(frame_idx)] = filtered_detections
@@ -143,11 +176,14 @@ class YOLOProcessor(BaseVisionProcessor):
 
             cap.release()
 
+            # Analyze for activities and tracking across frames
+            if frame_detections and query_params.get("task_type") in ["tracking", "activity"]:
+                frame_detections = self._analyze_video_for_activities(frame_detections, query_params)
+
             return frame_detections
         except Exception as e:
             self.logger.error(f"Error processing video: {e}")
             return {}
-
 
 # Register with the global registry
 from langvio import registry
