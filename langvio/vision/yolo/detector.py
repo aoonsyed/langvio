@@ -23,7 +23,7 @@ class YOLOProcessor(BaseVisionProcessor):
     """Enhanced vision processor using YOLO models"""
 
     def __init__(self, name: str = "yolo",
-                 model_path: str = "yolov8n.pt",
+                 model_path: str = "yolov11n.pt",
                  confidence: float = DEFAULT_CONFIDENCE_THRESHOLD,
                  **kwargs):
         """

@@ -13,9 +13,9 @@ The JSON response must have the following fields:
 - target_objects: List of object categories to detect.
 - count_objects: Boolean indicating if counting is needed
 - task_type: One of "identification", "counting", "verification", "analysis", "tracking", "activity"
-- attributes: List of dictionaries for attributes to check, e.g. [{"attribute": "color", "value": "red"}]
-- spatial_relations: List of dictionaries for spatial relationships, e.g. [{"relation": "above", "object": "table"}]
-- activities: List of activities to detect (for videos), e.g. ["walking", "running"]
+- attributes: List of dictionaries for attributes to check, e.g. "attribute": "color", "value": "red"
+- spatial_relations: List of dictionaries for spatial relationships, e.g. "relation": "above", "object": "table"
+- activities: List of activities to detect (for videos), e.g. "walking", "running"
 - custom_instructions: Any additional processing instructions that don't fit the categories above
 
 Be precise and thorough in interpreting the query.

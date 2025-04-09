@@ -24,7 +24,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Example for image attribute detection
-    image_path = "examples/data/colorful_objects.jpg"  # Replace with your image path
+    image_path = "data/sample_image.jpeg"  # Replace with your image path
 
     if os.path.exists(image_path):
         print(f"\n--- Processing image: {image_path} ---")
@@ -47,7 +47,7 @@ def main():
                 print(f"- {det['label']} with confidence {det['confidence']:.2f}")
 
         # Size attribute query
-        query = "Find all large objects in this image"
+        query = "confirm if a person is wearing yellow in the image ? "
         print(f"\nQuery: {query}")
 
         # Process the query
@@ -64,13 +64,13 @@ def main():
                 print(f"- {det['label']} with confidence {det['confidence']:.2f}")
 
     # Example for video attribute detection
-    video_path = "examples/data/traffic_video.mp4"  # Replace with your video path
+    video_path = "data/sample_video.mp4"  # Replace with your video path
 
     if os.path.exists(video_path):
         print(f"\n--- Processing video: {video_path} ---")
 
         # Color attribute query for video
-        query = "Find all blue vehicles in this video"
+        query = "Find all grey animals in this video"
         print(f"Query: {query}")
 
         # Process the query

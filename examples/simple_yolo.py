@@ -24,8 +24,8 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Path to sample media (replace with your own)
-    image_path = "sample_image.jpeg"
-    video_path = "sample_video.mp4"
+    image_path = "data/sample_image.jpeg"
+    video_path = "data/sample_video.mp4"
 
     # Process image if it exists
     if os.path.exists(image_path):

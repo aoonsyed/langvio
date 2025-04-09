@@ -23,7 +23,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Example for image counting
-    image_path = "examples/data/crowd_scene.jpg"  # Replace with your image path
+    image_path = "data/sample_image.jpeg"  # Replace with your image path
 
     if os.path.exists(image_path):
         print(f"\n--- Processing image: {image_path} ---")
@@ -60,7 +60,7 @@ def main():
         print(f"Verified counts: {car_count} cars and {bicycle_count} bicycles detected")
 
     # Example for video counting
-    video_path = "examples/data/traffic_video.mp4"  # Replace with your video path
+    video_path = "data/traffic_video.mp4"  # Replace with your video path
 
     if os.path.exists(video_path):
         print(f"\n--- Processing video: {video_path} ---")

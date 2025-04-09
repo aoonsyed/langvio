@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 from langvio.core.base import Processor
+from langvio.vision.color_detection import ColorDetector
 from langvio.vision.utils import (
     calculate_relative_positions,
     detect_spatial_relationships,
@@ -198,38 +199,18 @@ class BaseVisionProcessor(Processor):
 
                 # Extract dominant color (very basic implementation)
                 if obj_region.size > 0:
-                    # Convert to HSV for better color analysis
-                    hsv_region = cv2.cvtColor(obj_region, cv2.COLOR_BGR2HSV)
+                    # Get color information
+                    color_info = ColorDetector.get_color_profile(obj_region)
 
-                    # Calculate average HSV
-                    avg_color = np.mean(hsv_region, axis=(0, 1))
+                    # Add to detection attributes
+                    if "attributes" not in det:
+                        det["attributes"] = {}
 
-                    # Classify the color based on HSV
-                    h, s, v = avg_color
+                    det["attributes"]["color"] = color_info["dominant_color"]
+                    det["attributes"]["is_multicolored"] = color_info["is_multicolored"]
 
-                    # Simple color classification based on hue
-                    if s < 30:
-                        if v < 75:
-                            color = "black"
-                        elif v > 180:
-                            color = "white"
-                        else:
-                            color = "gray"
-                    else:
-                        if h < 15 or h > 165:
-                            color = "red"
-                        elif 15 <= h < 45:
-                            color = "orange"
-                        elif 45 <= h < 75:
-                            color = "yellow"
-                        elif 75 <= h < 105:
-                            color = "green"
-                        elif 105 <= h < 135:
-                            color = "blue"
-                        else:
-                            color = "purple"
-
-                    det["attributes"]["color"] = color
+                    # Optionally add all detected colors
+                    det["attributes"]["colors"] = list(color_info["color_percentages"].keys())
 
         except Exception:
             # In case of any errors, return original detections
