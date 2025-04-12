@@ -13,7 +13,6 @@ class GeminiProcessor(BaseLLMProcessor):
 
     def __init__(self, name: str = "gemini",
                  model_name: str = "gemini-pro",
-                 api_configs: Optional[Dict[str, Any]] = None,
                  model_kwargs: Optional[Dict[str, Any]] = None,
                  **kwargs):
         """
@@ -22,13 +21,11 @@ class GeminiProcessor(BaseLLMProcessor):
         Args:
             name: Processor name
             model_name: Name of the Gemini model to use
-            api_configs: API configuration parameters (API keys, etc.)
             model_kwargs: Additional model parameters (temperature, etc.)
             **kwargs: Additional processor parameters
         """
         config = {
             "model_name": model_name,
-            "api_configs": api_configs or {},
             "model_kwargs": model_kwargs or {},
             **kwargs
         }
@@ -50,15 +47,18 @@ class GeminiProcessor(BaseLLMProcessor):
 
             # Import necessary components
             from langchain_google_genai import ChatGoogleGenerativeAI
-
+            import os
             # Get model configuration
             model_name = self.config["model_name"]
             model_kwargs = self.config["model_kwargs"].copy()
 
-            # Ensure API key is in environment
-            if "api_configs" in self.config and "google_api_key" in self.config["api_configs"]:
-                import os
-                os.environ["GOOGLE_API_KEY"] = self.config["api_configs"]["google_api_key"]
+            if "GOOGLE_API_KEY" not in os.environ:
+                # Log a warning rather than setting it from config
+                self.logger.warning(
+                    "GOOGLE_API_KEY environment variable not found. "
+                    "Please set it using 'export GOOGLE_API_KEY=your_key' o"
+                )
+                raise
 
             # Create the Gemini LLM
             self.llm = ChatGoogleGenerativeAI(

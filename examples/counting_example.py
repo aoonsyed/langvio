@@ -5,7 +5,6 @@ Example script for counting objects with Langvio
 import os
 import logging
 from collections import Counter
-from dotenv import load_dotenv
 from langvio import create_pipeline
 
 
@@ -59,35 +58,35 @@ def main():
         bicycle_count = sum(1 for det in result["detections"]["0"] if det["label"] == "bicycle")
         print(f"Verified counts: {car_count} cars and {bicycle_count} bicycles detected")
 
-    # Example for video counting
-    video_path = "data/traffic_video.mp4"  # Replace with your video path
-
-    if os.path.exists(video_path):
-        print(f"\n--- Processing video: {video_path} ---")
-
-        # Counting query
-        query = "Count the number of vehicles in this video"
-        print(f"Query: {query}")
-
-        # Process the query
-        result = pipeline.process(query, video_path)
-
-        # Display results
-        print(f"Output saved to: {result['output_path']}")
-        print(f"Explanation: {result['explanation']}")
-
-        # Count vehicles manually to verify
-        vehicle_classes = ["car", "truck", "bus", "motorcycle", "bicycle"]
-        vehicle_counter = Counter()
-
-        for frame_key, detections in result["detections"].items():
-            for det in detections:
-                if det["label"] in vehicle_classes:
-                    vehicle_counter[det["label"]] += 1
-
-        print("Verified vehicle counts per frame:")
-        for vehicle, count in vehicle_counter.items():
-            print(f"- {vehicle}: {count}")
+    # # Example for video counting
+    # video_path = "data/traffic_video.mp4"  # Replace with your video path
+    #
+    # if os.path.exists(video_path):
+    #     print(f"\n--- Processing video: {video_path} ---")
+    #
+    #     # Counting query
+    #     query = "Count the number of vehicles in this video"
+    #     print(f"Query: {query}")
+    #
+    #     # Process the query
+    #     result = pipeline.process(query, video_path)
+    #
+    #     # Display results
+    #     print(f"Output saved to: {result['output_path']}")
+    #     print(f"Explanation: {result['explanation']}")
+    #
+    #     # Count vehicles manually to verify
+    #     vehicle_classes = ["car", "truck", "bus", "motorcycle", "bicycle"]
+    #     vehicle_counter = Counter()
+    #
+    #     for frame_key, detections in result["detections"].items():
+    #         for det in detections:
+    #             if det["label"] in vehicle_classes:
+    #                 vehicle_counter[det["label"]] += 1
+    #
+    #     print("Verified vehicle counts per frame:")
+    #     for vehicle, count in vehicle_counter.items():
+    #         print(f"- {vehicle}: {count}")
 
 
 if __name__ == "__main__":

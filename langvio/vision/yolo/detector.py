@@ -8,7 +8,6 @@ import logging
 from typing import Dict, Any, List, Optional, Tuple
 
 import cv2
-import numpy as np
 from ultralytics import YOLO
 
 from langvio.vision.base import BaseVisionProcessor
@@ -90,15 +89,15 @@ class YOLOProcessor(BaseVisionProcessor):
             # Enhance detections with attributes based on the image
             detections = self._enhance_detections_with_attributes(detections, image_path)
 
-            # Filter detections based on query parameters
-            filtered_detections = self._filter_detections(
-                detections,
-                query_params,
-                image_dimensions
-            )
+            # # Filter detections based on query parameters
+            # filtered_detections = self._filter_detections(
+            #     detections,
+            #     query_params,
+            #     image_dimensions
+            # )
 
             # Return results (use "0" as the frame key for images)
-            return {"0": filtered_detections}
+            return {"0": detections}
         except Exception as e:
             self.logger.error(f"Error processing image: {e}")
             return {"0": []}
@@ -167,7 +166,7 @@ class YOLOProcessor(BaseVisionProcessor):
                     )
 
                     # Store results
-                    frame_detections[str(frame_idx)] = filtered_detections
+                    frame_detections[str(frame_idx)] = detections
 
                     # Clean up
                     os.remove(temp_path)

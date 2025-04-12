@@ -5,6 +5,9 @@ Configuration management for langvio
 import os
 import yaml
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env
+
 
 
 class Config:
@@ -19,59 +22,66 @@ class Config:
         Args:
             config_path: Path to a YAML configuration file
         """
-        # Default configuration
-        self.config = {
-            "llm": {
-                "default": "gemini",
-                "models": {
-                    "gemini": {
-                        "model_name": "gemini-pro",
-                        "api_configs": {
-                            "google_api_key": ""  # Should be set by the user
-                        },
-                        "model_kwargs": {
-                            "temperature": 0.2
-                        }
-                    },
-                    "gpt": {
-                        "model_name": "gpt-3.5-turbo",
-                        "api_configs": {
-                            "openai_api_key": ""  # Should be set by the user
-                        },
-                        "model_kwargs": {
-                            "temperature": 0.0
-                        }
-                    }
-                }
-            },
-            "vision": {
-                "default": "yolo",
-                "models": {
-                    "yolo": {
-                        "type": "yolo",
-                        "model_path": "yolov8n.pt",
-                        "confidence": 0.25
-                    }
-                }
-            },
-            "media": {
-                "output_dir": "./output",
-                "temp_dir": "./temp",
-                "visualization": {
-                    "box_color": [0, 255, 0],
-                    "text_color": [255, 255, 255],
-                    "line_thickness": 2
-                }
-            },
-            "logging": {
-                "level": "INFO",
-                "file": None
-            }
-        }
+        # Initialize empty config
+        self.config = {}
 
-        # Load user config if provided
+        # First load default config
+        self._load_default_config()
+
+        # Then load user config if provided
         if config_path and os.path.exists(config_path):
             self.load_config(config_path)
+
+    def _load_default_config(self) -> None:
+        """Load the default configuration from default_config.yaml"""
+        try:
+            if os.path.exists(self.DEFAULT_CONFIG_PATH):
+                with open(self.DEFAULT_CONFIG_PATH, 'r') as f:
+                    self.config = yaml.safe_load(f)
+                    if self.config is None:  # Handle empty file case
+                        self.config = {}
+            else:
+                # Fallback default configuration if file doesn't exist
+                self.config = {
+                    "llm": {
+                        "default": "gemini",
+                        "models": {
+                            "gemini": {
+                                "model_name": "gemini-pro",
+                                "model_kwargs": {"temperature": 0.2}
+                            },
+                            "gpt": {
+                                "model_name": "gpt-3.5-turbo",
+                                "model_kwargs": {"temperature": 0.0}
+                            }
+                        }
+                    },
+                    "vision": {
+                        "default": "yolo",
+                        "models": {
+                            "yolo": {
+                                "type": "yolo",
+                                "model_path": "yolov11n.pt",
+                                "confidence": 0.25
+                            }
+                        }
+                    },
+                    "media": {
+                        "output_dir": "./output",
+                        "temp_dir": "./temp",
+                        "visualization": {
+                            "box_color": [0, 255, 0],
+                            "text_color": [255, 255, 255],
+                            "line_thickness": 2
+                        }
+                    },
+                    "logging": {
+                        "level": "INFO",
+                        "file": None
+                    }
+                }
+        except Exception as e:
+            raise ValueError(f"Error loading default configuration: {e}")
 
     def load_config(self, config_path: str) -> None:
         """
@@ -83,6 +93,8 @@ class Config:
         try:
             with open(config_path, 'r') as f:
                 user_config = yaml.safe_load(f)
+                if user_config is None:  # Handle empty file case
+                    return
 
             # Update configuration
             self._update_config(self.config, user_config)
@@ -150,6 +162,15 @@ class Config:
             Logging configuration dictionary
         """
         return self.config["logging"]
+
+    def get_langsmith_config(self) -> Dict[str, Any]:
+        """
+        Get LangSmith configuration if available.
+
+        Returns:
+            LangSmith configuration dictionary
+        """
+        return self.config.get("langsmith", {})
 
     def save_config(self, config_path: str) -> None:
         """

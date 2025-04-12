@@ -40,10 +40,6 @@ class BaseLLMProcessor(Processor):
     def initialize(self) -> bool:
         """Initialize the processor with its configuration."""
         try:
-            # Set up API environment variables if provided
-            if "api_configs" in self.config:
-                self._setup_api_environment(self.config.get("api_configs", {}))
-
             # Initialize the specific LLM implementation
             self._initialize_llm()
 
@@ -60,12 +56,6 @@ class BaseLLMProcessor(Processor):
         """Initialize the specific LLM implementation."""
         pass
 
-    def _setup_api_environment(self, api_configs: Dict[str, Any]) -> None:
-        """Set up environment variables for API keys."""
-        import os
-        for key, value in api_configs.items():
-            if key.endswith("_api_key") and value:
-                os.environ[key.upper()] = value
 
     def _setup_prompts(self) -> None:
         """Set up the prompt templates with system message."""
@@ -109,8 +99,7 @@ class BaseLLMProcessor(Processor):
         except Exception as e:
             self.logger.error(f"Error parsing query: {e}")
 
-            # Fallback to simple extraction
-            return self._fallback_query_parsing(query)
+            return {'error' : e}
 
     def _ensure_parsed_fields(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
         """Ensure all required fields exist in the parsed query."""

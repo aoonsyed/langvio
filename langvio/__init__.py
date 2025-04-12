@@ -5,8 +5,6 @@ langvio: Connect language models to vision models for natural language visual an
 __version__ = "0.3.0"
 
 # Try to load environment variables from .env file
-from langvio.utils.env_loader import load_dotenv
-load_dotenv()
 
 from langvio.core.pipeline import Pipeline
 from langvio.core.registry import ModelRegistry

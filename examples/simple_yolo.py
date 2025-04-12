@@ -5,10 +5,8 @@ Simple example of using langvio with Gemini to detect humans
 import os
 import logging
 from langvio import create_pipeline
-from dotenv import load_dotenv
 
 # Load .env file if present
-load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

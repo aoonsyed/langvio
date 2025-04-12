@@ -4,11 +4,9 @@ Example script for spatial relationship detection with Langvio
 
 import os
 import logging
-from dotenv import load_dotenv
 from langvio import create_pipeline
 
 # Load environment variables from .env file (for API keys)
-load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
