@@ -7,6 +7,8 @@ import sys
 from typing import Dict, Any, Optional, List, Tuple, Union
 import logging
 
+import cv2
+
 from langvio.config import Config
 from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
@@ -132,6 +134,7 @@ class Pipeline:
     def process(self, query: str, media_path: str) -> Dict[str, Any]:
         """
         Process a query on media with enhanced capabilities.
+        Modified to pass all objects to the LLM before filtering for visualization.
 
         Args:
             query: Natural language query
@@ -173,7 +176,7 @@ class Pipeline:
         query_params = self.llm_processor.parse_query(query)
         self.logger.info(f"Parsed query params: {query_params}")
 
-        # Run detection with vision processor
+        # Run detection with vision processor - WITHOUT INITIAL FILTERING
         if is_video:
             # For video processing, check if we need to adjust sample rate based on task
             sample_rate = 5  # Default
@@ -181,23 +184,21 @@ class Pipeline:
                 # Use a more frequent sampling for tracking and activity detection
                 sample_rate = 2
 
-            detections = self.vision_processor.process_video(media_path, query_params, sample_rate)
+            # Get all detections without filtering
+            all_detections = self.vision_processor.process_video(media_path, query_params, sample_rate)
         else:
-            detections = self.vision_processor.process_image(media_path, query_params)
+            # Get all detections without filtering
+            all_detections = self.vision_processor.process_image(media_path, query_params)
 
-        # Generate explanation
-        explanation = self.llm_processor.generate_explanation(query, detections)
+            # Generate explanation using ALL detected objects
+        explanation = self.llm_processor.generate_explanation(query, all_detections)
 
-        # Generate output path
-        output_path = self.media_processor.get_output_path(media_path)
+        # Get highlighted objects from the LLM processor
+        highlighted_objects = self.llm_processor.get_highlighted_objects()
 
-        # Visualize results with appropriate visualization based on task type
-        visualization_config = self._get_visualization_config(query_params)
-
-        if is_video:
-            self.media_processor.visualize_video(media_path, output_path, detections, **visualization_config)
-        else:
-            self.media_processor.visualize_image(media_path, output_path, detections["0"], **visualization_config)
+        # Create visualization with highlighted objects
+        output_path = self._create_visualization(media_path, all_detections, highlighted_objects, query_params,
+                                                 is_video)
 
         # Prepare result
         result = {
@@ -206,12 +207,12 @@ class Pipeline:
             "media_type": media_type,
             "output_path": output_path,
             "explanation": explanation,
-            "detections": detections,
-            "query_params": query_params
+            "detections": all_detections,
+            "query_params": query_params,
+            "highlighted_objects": highlighted_objects
         }
 
-        self.logger.info(f"Processed query successfully: {len(detections)} detection sets")
-
+        self.logger.info(f"Processed query successfully")
         return result
 
     def _get_visualization_config(self, query_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -249,3 +250,46 @@ class Pipeline:
             viz_config["line_thickness"] += 1
 
         return viz_config
+
+    def _create_visualization(self, media_path: str, all_detections: Dict[str, List[Dict[str, Any]]],
+                              highlighted_objects: List[Dict[str, Any]], query_params: Dict[str, Any],
+                              is_video: bool) -> str:
+        """
+        Create visualization with highlighted objects and return the output path.
+
+        Args:
+            media_path: Path to input media
+            all_detections: All detection results
+            highlighted_objects: Objects to highlight
+            query_params: Query parameters
+            is_video: Whether the media is a video
+
+        Returns:
+            Path to the output visualization
+        """
+        # Import vision utils
+        from langvio.utils.vision_utils import create_visualization_detections_for_video, \
+            create_visualization_detections_for_image
+
+        # Generate output path
+        output_path = self.media_processor.get_output_path(media_path)
+
+        # Get visualization config
+        visualization_config = self._get_visualization_config(query_params)
+
+        if is_video:
+            # Create visualization detections for video
+            visualization_detections = create_visualization_detections_for_video(all_detections, highlighted_objects)
+
+            # Visualize video
+            self.media_processor.visualize_video(media_path, output_path, visualization_detections,
+                                                 **visualization_config)
+        else:
+            # Create visualization detections for image
+            visualization_detections = create_visualization_detections_for_image(highlighted_objects)
+
+            # Visualize image
+            self.media_processor.visualize_image(media_path, output_path, visualization_detections,
+                                                 **visualization_config)
+
+        return output_path

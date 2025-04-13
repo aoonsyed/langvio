@@ -5,14 +5,15 @@ Enhanced base classes for LLM processors with expanded capabilities
 import json
 import logging
 import importlib.util
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Union
+from abc import abstractmethod
+from typing import Dict, Any, List, Optional
 
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.output_parsers.json import SimpleJsonOutputParser
 
 from langvio.core.base import Processor
+from langvio.utils.llm_utils import index_detections, format_detection_summary, parse_explanation_response
 from langvio.prompts.templates import (
     QUERY_PARSING_TEMPLATE,
     EXPLANATION_TEMPLATE,
@@ -20,10 +21,6 @@ from langvio.prompts.templates import (
 )
 from langvio.prompts.constants import (
     TASK_TYPES,
-    VISUAL_ATTRIBUTES,
-    SPATIAL_RELATIONS,
-    ACTIVITIES,
-    COMMON_OBJECTS
 )
 
 class BaseLLMProcessor(Processor):
@@ -132,24 +129,51 @@ class BaseLLMProcessor(Processor):
         # Get the original parsed query
         parsed_query = self.parse_query(query)
 
+        # Add unique IDs to each detection for reference
+        indexed_detections, detection_map = index_detections(detections)
+
+        # Format detection summary with object IDs
+        detection_summary = format_detection_summary(indexed_detections, parsed_query)
+
         # Create a summary of detections
         print(detections)
         try:
             # Invoke the explanation chain
             response = self.explanation_chain.invoke({
                 "query": query,
-                "detection_summary": str(detections),
+                "detection_summary": detection_summary,
                 "parsed_query": json.dumps(parsed_query, indent=2),
                 "history": []
             })
 
-            return response.content
+            # Parse the response
+            if response and hasattr(response, 'content'):
+                explanation_text, highlight_objects = parse_explanation_response(response.content, detection_map)
+
+                # Store the highlighted objects for visualization
+                self._highlighted_objects = highlight_objects
+
+                return explanation_text
+            else:
+                return "Error generating explanation: No valid response from LLM"
 
         except Exception as e:
             self.logger.error(f"Error generating explanation: {e}")
-            return f"error : {e}"
+            return f"Error analyzing the image: {e}"
 
+    def get_highlighted_objects(self) -> List[Dict[str, Any]]:
+        """
+        Get the objects that were highlighted in the last explanation.
+
+        Returns:
+            List of highlighted objects with frame references
+        """
+        return getattr(self, '_highlighted_objects', [])
 
     def is_package_installed(self, package_name: str) -> bool:
         """Check if a Python package is installed."""
         return importlib.util.find_spec(package_name) is not None
+
+
+
+

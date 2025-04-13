@@ -38,25 +38,25 @@ def main():
         print(f"Output saved to: {result['output_path']}")
         print(f"Explanation: {result['explanation']}")
 
-        # Count people manually to verify
-        person_count = sum(1 for det in result["detections"]["0"] if det["label"] == "person")
-        print(f"Verified count: {person_count} people detected")
-
-        # More specific counting query
-        query = "How many cars and bicycles are in this image?"
-        print(f"\nQuery: {query}")
-
-        # Process the second query
-        result = pipeline.process(query, image_path)
-
-        # Display results
-        print(f"Output saved to: {result['output_path']}")
-        print(f"Explanation: {result['explanation']}")
-
-        # Count vehicles manually to verify
-        car_count = sum(1 for det in result["detections"]["0"] if det["label"] == "car")
-        bicycle_count = sum(1 for det in result["detections"]["0"] if det["label"] == "bicycle")
-        print(f"Verified counts: {car_count} cars and {bicycle_count} bicycles detected")
+        # # Count people manually to verify
+        # person_count = sum(1 for det in result["detections"]["0"] if det["label"] == "person")
+        # print(f"Verified count: {person_count} people detected")
+        #
+        # # More specific counting query
+        # query = "How many cars and bicycles are in this image?"
+        # print(f"\nQuery: {query}")
+        #
+        # # Process the second query
+        # result = pipeline.process(query, image_path)
+        #
+        # # Display results
+        # print(f"Output saved to: {result['output_path']}")
+        # print(f"Explanation: {result['explanation']}")
+        #
+        # # Count vehicles manually to verify
+        # car_count = sum(1 for det in result["detections"]["0"] if det["label"] == "car")
+        # bicycle_count = sum(1 for det in result["detections"]["0"] if det["label"] == "bicycle")
+        # print(f"Verified counts: {car_count} cars and {bicycle_count} bicycles detected")
 
     # # Example for video counting
     # video_path = "data/traffic_video.mp4"  # Replace with your video path

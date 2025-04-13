@@ -35,42 +35,42 @@ def main():
         # Display results
         print(f"Output saved to: {result['output_path']}")
         print(f"Explanation: {result['explanation']}")
-        print("\nDetected objects:")
+        # print("\nDetected objects:")
+        #
+        # # List all detected objects
+        # detected_classes = set()
+        # for detection in result["detections"]["0"]:
+        #     detected_classes.add(detection["label"])
+        #
+        # for cls in detected_classes:
+        #     print(f"- {cls}")
 
-        # List all detected objects
-        detected_classes = set()
-        for detection in result["detections"]["0"]:
-            detected_classes.add(detection["label"])
-
-        for cls in detected_classes:
-            print(f"- {cls}")
-
-    # Example for video detection
-    video_path = "data/sample_video.mp4"  # Replace with your video path
-
-    if os.path.exists(video_path):
-        print(f"\n--- Processing video: {video_path} ---")
-
-        # Basic detection query
-        query = "What objects appear in this video?"
-        print(f"Query: {query}")
-
-        # Process the query
-        result = pipeline.process(query, video_path)
-
-        # Display results
-        print(f"Output saved to: {result['output_path']}")
-        print(f"Explanation: {result['explanation']}")
-        print("\nDetected objects:")
-
-        # Aggregate all detected objects across frames
-        detected_classes = set()
-        for frame_key, detections in result["detections"].items():
-            for detection in detections:
-                detected_classes.add(detection["label"])
-
-        for cls in detected_classes:
-            print(f"- {cls}")
+    # # Example for video detection
+    # video_path = "data/sample_video.mp4"  # Replace with your video path
+    #
+    # if os.path.exists(video_path):
+    #     print(f"\n--- Processing video: {video_path} ---")
+    #
+    #     # Basic detection query
+    #     query = "What objects appear in this video?"
+    #     print(f"Query: {query}")
+    #
+    #     # Process the query
+    #     result = pipeline.process(query, video_path)
+    #
+    #     # Display results
+    #     print(f"Output saved to: {result['output_path']}")
+    #     print(f"Explanation: {result['explanation']}")
+    #     print("\nDetected objects:")
+    #
+    #     # Aggregate all detected objects across frames
+    #     detected_classes = set()
+    #     for frame_key, detections in result["detections"].items():
+    #         for detection in detections:
+    #             detected_classes.add(detection["label"])
+    #
+    #     for cls in detected_classes:
+    #         print(f"- {cls}")
 
 
 if __name__ == "__main__":
