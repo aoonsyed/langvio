@@ -23,7 +23,7 @@ share/python-wheels/
 MANIFEST
 
 # Environment and secrets
-langvio/.env
+.env
 .venv
 env/
 venv/
