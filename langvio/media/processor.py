@@ -196,14 +196,19 @@ class MediaProcessor:
         except Exception as e:
             self.logger.error(f"Error visualizing video: {e}")
 
+    """
+    Modifications to improve visualization quality in MediaProcessor
+    """
+
     def _draw_detections_on_image(self,
-                                 image: np.ndarray,
-                                 detections: List[Dict[str, Any]],
-                                 box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
-                                 text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
-                                 line_thickness: int = 2,
-                                 show_attributes: bool = True,
-                                 show_confidence: bool = True) -> np.ndarray:
+                                  image: np.ndarray,
+                                  detections: List[Dict[str, Any]],
+                                  box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
+                                  text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
+                                  line_thickness: int = 2,
+                                  show_attributes: bool = True,
+                                  show_confidence: bool = True,
+                                  show_relationships: bool = False) -> np.ndarray:  # Add parameter to control relationships
         """
         Enhanced method to draw detections on an image with attributes and activities.
 
@@ -215,6 +220,7 @@ class MediaProcessor:
             line_thickness: Thickness of bounding box lines
             show_attributes: Whether to display attribute information
             show_confidence: Whether to display confidence scores
+            show_relationships: Whether to draw relationship lines (disabled by default)
 
         Returns:
             Image with detections drawn
@@ -224,70 +230,90 @@ class MediaProcessor:
 
         # Draw each detection
         for det in detections:
+            if "bbox" not in det:
+                continue  # Skip detections without bounding boxes
+
             # Extract bounding box
             x1, y1, x2, y2 = det["bbox"]
+
+            # Make sure coordinates are integers
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+
+            # Check for valid box dimensions
+            if x2 <= x1 or y2 <= y1:
+                continue  # Skip invalid boxes
 
             # Create label based on configuration
             label_parts = [det['label']]
 
             # Add confidence if requested
-            if show_confidence:
-                label_parts.append(f"{det['confidence']:.2f}")
+            if show_confidence and "confidence" in det:
+                conf = det['confidence']
+                if isinstance(conf, (int, float)):
+                    label_parts.append(f"{conf:.2f}")
 
-            # Add attributes if requested and present
+            # Add attributes if requested and present (limit to 2 most important)
             if show_attributes and "attributes" in det and det["attributes"]:
-                for attr_name, attr_value in det["attributes"].items():
-                    label_parts.append(f"{attr_name}:{attr_value}")
+                # Prioritize color and size attributes
+                priority_attrs = []
+                for key in ["color", "size"]:
+                    if key in det["attributes"]:
+                        priority_attrs.append(f"{key}:{det['attributes'][key]}")
 
-            # Add activities if present
-            if "activities" in det and det["activities"]:
-                activities = ", ".join(det["activities"])
-                label_parts.append(f"[{activities}]")
+                # Add up to 2 priority attributes to avoid cluttering
+                if priority_attrs:
+                    label_parts.extend(priority_attrs[:2])
+
+            # Add activities if present (limit to 1 most important)
+            if "activities" in det and det["activities"] and len(det["activities"]) > 0:
+                # Only add the first activity to avoid cluttering
+                label_parts.append(f"[{det['activities'][0]}]")
 
             # Combine into label
             label = " | ".join(label_parts)
 
-            # Draw bounding box
-            cv2.rectangle(output_image, (x1, y1), (x2, y2), box_color, line_thickness)
+            # Draw bounding box with line thickness scaled by image size
+            thickness = max(1, min(line_thickness, int(min(image.shape[0], image.shape[1]) / 500)))
+            cv2.rectangle(output_image, (x1, y1), (x2, y2), box_color, thickness)
 
-            # Calculate text size for proper background
-            font_scale = 0.5
+            # Calculate text size and scale font size based on image dimensions
+            font_scale = max(0.3, min(0.5, min(image.shape[0], image.shape[1]) / 1000))
             font = cv2.FONT_HERSHEY_SIMPLEX
-            text_size = cv2.getTextSize(label, font, font_scale, 2)[0]
+            text_size = cv2.getTextSize(label, font, font_scale, 1)[0]
 
-            # Draw text background
-            cv2.rectangle(output_image, (x1, y1 - text_size[1] - 5), (x1 + text_size[0], y1), box_color, -1)
+            # Draw text background with slight transparency
+            alpha = 0.6  # Transparency factor
+            overlay = output_image.copy()
+            cv2.rectangle(overlay, (x1, y1 - text_size[1] - 5), (x1 + text_size[0], y1), box_color, -1)
+            cv2.addWeighted(overlay, alpha, output_image, 1 - alpha, 0, output_image)
 
             # Draw text
-            cv2.putText(output_image, label, (x1, y1 - 5), font, font_scale, text_color, 2)
+            cv2.putText(output_image, label, (x1, y1 - 5), font, font_scale, text_color, 1)
 
-            # Draw relationship lines if available and showing attributes
-            if show_attributes and "relationships" in det:
+            # Draw relationship lines if requested
+            if show_relationships and "relationships" in det:
                 for rel in det["relationships"]:
                     # Find the related object in the current detections
                     for rel_det_idx, rel_det in enumerate(detections):
                         if rel_det_idx == rel.get("object_id"):
                             # Draw a line between the centers of the objects
                             center1 = (int((x1 + x2) / 2), int((y1 + y2) / 2))
-                            rel_box = rel_det["bbox"]
-                            center2 = (int((rel_box[0] + rel_box[2]) / 2), int((rel_box[1] + rel_box[3]) / 2))
+                            if "bbox" in rel_det:
+                                rel_box = rel_det["bbox"]
+                                center2 = (int((rel_box[0] + rel_box[2]) / 2), int((rel_box[1] + rel_box[3]) / 2))
 
-                            # Use different line styles for different relations
-                            if "near" in rel.get("relations", []):
-                                # Dashed line for "near"
-                                self._draw_dashed_line(output_image, center1, center2, box_color,
-                                                     thickness=line_thickness)
-                            else:
-                                # Solid line for other relations
-                                cv2.line(output_image, center1, center2, box_color,
-                                        thickness=max(1, line_thickness - 1))
+                                # Use different line styles for different relations
+                                if "near" in rel.get("relations", []):
+                                    # Dashed line for "near"
+                                    self._draw_dashed_line(output_image, center1, center2, box_color,
+                                                           thickness=max(1, thickness - 1))
+                                else:
+                                    # Solid line for other relations
+                                    cv2.line(output_image, center1, center2, box_color,
+                                             thickness=max(1, thickness - 1))
 
-                            # Draw a small text indicating the relation
-                            if rel.get("relations"):
-                                mid_point = (int((center1[0] + center2[0]) / 2), int((center1[1] + center2[1]) / 2))
-                                rel_text = "+".join(rel["relations"][:2])  # Show at most 2 relations
-                                cv2.putText(output_image, rel_text, mid_point, font, 0.4, text_color, 1)
-                            break
+                                # Skip text labels for relationships to reduce clutter
+                                break
 
         return output_image
 

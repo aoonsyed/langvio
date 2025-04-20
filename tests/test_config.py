@@ -62,7 +62,7 @@ def test_custom_config_loading():
         }
     }
 
-    with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp:
+    with tempfile.NamedTemporaryFile(suffix=".yaml",  mode="w",delete=False) as temp:
         temp_path = temp.name
         yaml.dump(test_config, temp)
 
@@ -105,7 +105,7 @@ def test_get_specific_configs():
         }
     }
 
-    with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp:
+    with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as temp:
         temp_path = temp.name
         yaml.dump(test_config, temp)
 

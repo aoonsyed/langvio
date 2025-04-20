@@ -74,10 +74,8 @@ def test_package_structure():
 
 def test_cli_module():
     """Test that the CLI module is available."""
-    # Check if CLI module exists
-    cli_spec = importlib.util.find_spec("langvio.cli")
-    assert cli_spec is not None, "CLI module not found"
+    import importlib
 
     # Check if the main function exists in the CLI module
-    cli_module = importlib.util.import_module("langvio.cli")
+    cli_module = importlib.import_module("langvio.cli")
     assert hasattr(cli_module, "main"), "main function not found in CLI module"

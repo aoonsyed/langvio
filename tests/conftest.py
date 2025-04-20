@@ -35,7 +35,7 @@ def sample_image_path(test_dir):
     cv2.circle(image, (70, 70), 15, (255, 0, 0), -1)  # BGR format
 
     # Save the image
-    image_path = os.path.join(test_dir, "sample_image.jpg")
+    image_path = os.path.join(test_dir, "sample_image.jpeg")
     cv2.imwrite(image_path, image)
 
     yield image_path
@@ -106,7 +106,7 @@ def sample_config_path(sample_config_dict):
     """Create a sample configuration file."""
     import yaml
 
-    with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as temp:
+    with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as temp:
         temp_path = temp.name
         yaml.dump(sample_config_dict, temp)
 
