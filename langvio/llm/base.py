@@ -2,30 +2,23 @@
 Enhanced base classes for LLM processors with expanded capabilities
 """
 
+import importlib.util
 import json
 import logging
-import importlib.util
 from abc import abstractmethod
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
+from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.output_parsers.json import SimpleJsonOutputParser
 
 from langvio.core.base import Processor
-from langvio.utils.llm_utils import (
-    index_detections,
-    format_detection_summary,
-    parse_explanation_response,
-)
-from langvio.prompts.templates import (
-    QUERY_PARSING_TEMPLATE,
-    EXPLANATION_TEMPLATE,
-    SYSTEM_PROMPT,
-)
-from langvio.prompts.constants import (
-    TASK_TYPES,
-)
+from langvio.prompts.constants import TASK_TYPES
+from langvio.prompts.templates import (EXPLANATION_TEMPLATE,
+                                       QUERY_PARSING_TEMPLATE, SYSTEM_PROMPT)
+from langvio.utils.llm_utils import (format_detection_summary,
+                                     index_detections,
+                                     parse_explanation_response)
 
 
 class BaseLLMProcessor(Processor):

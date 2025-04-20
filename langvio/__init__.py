@@ -15,7 +15,6 @@ registry = ModelRegistry()
 # Import main components for easier access
 from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
-
 # Register the YOLO processor
 from langvio.vision.yolo.detector import YOLOProcessor
 
@@ -43,8 +42,9 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
     Returns:
         A configured Pipeline instance
     """
-    from langvio.core.pipeline import Pipeline
     import sys
+
+    from langvio.core.pipeline import Pipeline
 
     # Create the pipeline
     pipeline = Pipeline(config_path)

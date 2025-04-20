@@ -2,19 +2,19 @@
 Enhanced core pipeline for connecting LLMs with vision models
 """
 
+import logging
 import os
 import sys
-from typing import Dict, Any, Optional, List, Tuple, Union
-import logging
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 
 from langvio.config import Config
 from langvio.llm.base import BaseLLMProcessor
-from langvio.vision.base import BaseVisionProcessor
 from langvio.media.processor import MediaProcessor
-from langvio.utils.logging import setup_logging
 from langvio.utils.file_utils import is_image_file, is_video_file
+from langvio.utils.logging import setup_logging
+from langvio.vision.base import BaseVisionProcessor
 
 
 class Pipeline:
@@ -287,9 +287,8 @@ class Pipeline:
         """
         # Import vision utils
         from langvio.utils.vision_utils import (
-            create_visualization_detections_for_video,
             create_visualization_detections_for_image,
-        )
+            create_visualization_detections_for_video)
 
         # Generate output path
         output_path = self.media_processor.get_output_path(media_path)

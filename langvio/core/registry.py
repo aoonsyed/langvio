@@ -2,7 +2,7 @@
 Registry for langvio models and processors
 """
 
-from typing import Dict, Any, Type, Optional, Callable
+from typing import Any, Callable, Dict, Optional, Type
 
 
 class ModelRegistry:

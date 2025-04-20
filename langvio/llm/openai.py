@@ -3,7 +3,7 @@ OpenAI-specific LLM processor implementation
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from langvio.llm.base import BaseLLMProcessor
 
@@ -48,8 +48,9 @@ class OpenAIProcessor(BaseLLMProcessor):
                 )
 
             # Import necessary components
-            from langchain_openai import ChatOpenAI
             import os
+
+            from langchain_openai import ChatOpenAI
 
             # Get model configuration
             model_name = self.config["model_name"]

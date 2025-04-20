@@ -3,11 +3,11 @@ Comprehensive test suite for the ColorDetector class.
 Tests all color detection methods with various inputs.
 """
 
-import pytest
-import numpy as np
 import cv2
-from langvio.vision.color_detection import ColorDetector
+import numpy as np
+import pytest
 
+from langvio.vision.color_detection import ColorDetector
 
 # Fixtures for different types of test images
 

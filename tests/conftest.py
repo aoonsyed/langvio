@@ -3,10 +3,11 @@ Common pytest fixtures for Langvio tests
 """
 
 import os
-import pytest
 import tempfile
-import numpy as np
+
 import cv2
+import numpy as np
+import pytest
 
 
 @pytest.fixture(scope="session")

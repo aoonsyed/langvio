@@ -2,9 +2,10 @@
 Visualization utilities for media
 """
 
+from typing import Any, Dict, List, Tuple, Union
+
 import cv2
 import numpy as np
-from typing import Dict, Any, List, Tuple, Union
 
 
 def draw_detections_on_image(

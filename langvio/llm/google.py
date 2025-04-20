@@ -3,7 +3,7 @@ Google Gemini-specific LLM processor implementation
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from langvio.llm.base import BaseLLMProcessor
 
@@ -49,8 +49,9 @@ class GeminiProcessor(BaseLLMProcessor):
                 )
 
             # Import necessary components
-            from langchain_google_genai import ChatGoogleGenerativeAI
             import os
+
+            from langchain_google_genai import ChatGoogleGenerativeAI
 
             # Get model configuration
             model_name = self.config["model_name"]

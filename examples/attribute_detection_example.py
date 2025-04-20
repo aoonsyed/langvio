@@ -2,8 +2,9 @@
 Example script for attribute detection with Langvio
 """
 
-import os
 import logging
+import os
+
 from langvio import create_pipeline
 
 # Load environment variables from .env file (for API keys)

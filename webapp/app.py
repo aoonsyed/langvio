@@ -2,20 +2,14 @@
 Flask application for Langvio - process images and videos with natural language
 """
 
-import os
-import uuid
-import time
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    send_from_directory,
-)
-from werkzeug.utils import secure_filename
 import logging
+import os
+import time
+import uuid
+
+from flask import (Flask, flash, redirect, render_template, request,
+                   send_from_directory, url_for)
+from werkzeug.utils import secure_filename
 
 # Import langvio
 from langvio import create_pipeline

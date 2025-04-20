@@ -3,8 +3,9 @@ Configuration management for langvio
 """
 
 import os
+from typing import Any, Dict, Optional
+
 import yaml
-from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env

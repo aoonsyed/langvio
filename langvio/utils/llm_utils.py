@@ -2,9 +2,9 @@
 Utility functions for LLM processing
 """
 
-import re
 import json
-from typing import Dict, List, Any, Tuple, Optional
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def index_detections(

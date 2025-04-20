@@ -2,9 +2,9 @@
 Enhanced media processing utilities
 """
 
-import os
 import logging
-from typing import Dict, Any, List, Optional, Tuple, Union
+import os
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np

@@ -2,11 +2,11 @@
 Example script for counting objects with Langvio
 """
 
-import os
 import logging
+import os
 from collections import Counter
-from langvio import create_pipeline
 
+from langvio import create_pipeline
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

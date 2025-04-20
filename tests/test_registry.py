@@ -1,4 +1,5 @@
 import pytest
+
 from langvio.core.registry import ModelRegistry
 
 

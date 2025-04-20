@@ -3,7 +3,7 @@ Base classes for langvio components
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class Processor(ABC):

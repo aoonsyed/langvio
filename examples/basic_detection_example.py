@@ -2,8 +2,9 @@
 Example script for basic object detection with Langvio
 """
 
-import os
 import logging
+import os
+
 from langvio import create_pipeline
 
 # Set up logging

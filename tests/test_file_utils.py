@@ -1,14 +1,12 @@
 import os
-import pytest
 import tempfile
-from langvio.utils.file_utils import (
-    ensure_directory,
-    get_file_extension,
-    is_image_file,
-    is_video_file,
-    create_temp_copy,
-    get_files_in_directory,
-)
+
+import pytest
+
+from langvio.utils.file_utils import (create_temp_copy, ensure_directory,
+                                      get_file_extension,
+                                      get_files_in_directory, is_image_file,
+                                      is_video_file)
 
 
 def test_ensure_directory():

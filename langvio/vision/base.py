@@ -3,22 +3,19 @@ Enhanced base classes for vision processors
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
 
 from langvio.core.base import Processor
-from langvio.vision.color_detection import ColorDetector
-from langvio.vision.utils import (
-    calculate_relative_positions,
-    detect_spatial_relationships,
-    detect_activities,
-    filter_by_attributes,
-    filter_by_spatial_relations,
-    filter_by_activities,
-)
 from langvio.prompts.constants import DEFAULT_VIDEO_SAMPLE_RATE
+from langvio.vision.color_detection import ColorDetector
+from langvio.vision.utils import (calculate_relative_positions,
+                                  detect_activities,
+                                  detect_spatial_relationships,
+                                  filter_by_activities, filter_by_attributes,
+                                  filter_by_spatial_relations)
 
 
 class BaseVisionProcessor(Processor):

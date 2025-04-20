@@ -2,9 +2,10 @@
 Example script for combined analysis capabilities with Langvio
 """
 
-import os
 import logging
+import os
 from collections import defaultdict
+
 from langvio import create_pipeline
 
 # Load environment variables from .env file (for API keys)

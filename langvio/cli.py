@@ -2,15 +2,15 @@
 Command-line interface for langvio
 """
 
-import os
-import sys
 import argparse
 import logging
-from typing import Dict, Any
+import os
+import sys
+from typing import Any, Dict
 
 from langvio import create_pipeline
-from langvio.utils.logging import setup_logging
 from langvio.utils.file_utils import is_image_file, is_video_file
+from langvio.utils.logging import setup_logging
 
 
 def main():

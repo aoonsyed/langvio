@@ -2,20 +2,18 @@
 Enhanced YOLO-based vision processor
 """
 
+import logging
 import os
 import tempfile
-import logging
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 from ultralytics import YOLO, YOLOE
 
+from langvio.prompts.constants import (DEFAULT_CONFIDENCE_THRESHOLD,
+                                       DEFAULT_VIDEO_SAMPLE_RATE)
 from langvio.vision.base import BaseVisionProcessor
 from langvio.vision.utils import extract_detections
-from langvio.prompts.constants import (
-    DEFAULT_CONFIDENCE_THRESHOLD,
-    DEFAULT_VIDEO_SAMPLE_RATE,
-)
 
 
 class YOLOProcessor(BaseVisionProcessor):
@@ -97,10 +95,8 @@ class YOLOProcessor(BaseVisionProcessor):
 
             # Calculate relative positions if image dimensions provided
             if image_dimensions:
-                from langvio.vision.utils import (
-                    calculate_relative_positions,
-                    detect_spatial_relationships,
-                )
+                from langvio.vision.utils import (calculate_relative_positions,
+                                                  detect_spatial_relationships)
 
                 detections = calculate_relative_positions(detections, *image_dimensions)
                 detections = detect_spatial_relationships(detections)
@@ -179,8 +175,7 @@ class YOLOProcessor(BaseVisionProcessor):
                     # Calculate relative positions and relationships
                     from langvio.vision.utils import (
                         calculate_relative_positions,
-                        detect_spatial_relationships,
-                    )
+                        detect_spatial_relationships)
 
                     detections = calculate_relative_positions(
                         detections, *video_dimensions
