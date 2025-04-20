@@ -14,11 +14,16 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from langvio.core.base import Processor
 from langvio.prompts.constants import TASK_TYPES
-from langvio.prompts.templates import (EXPLANATION_TEMPLATE,
-                                       QUERY_PARSING_TEMPLATE, SYSTEM_PROMPT)
-from langvio.utils.llm_utils import (format_detection_summary,
-                                     index_detections,
-                                     parse_explanation_response)
+from langvio.prompts.templates import (
+    EXPLANATION_TEMPLATE,
+    QUERY_PARSING_TEMPLATE,
+    SYSTEM_PROMPT,
+)
+from langvio.utils.llm_utils import (
+    format_detection_summary,
+    index_detections,
+    parse_explanation_response,
+)
 
 
 class BaseLLMProcessor(Processor):
@@ -49,7 +54,6 @@ class BaseLLMProcessor(Processor):
     @abstractmethod
     def _initialize_llm(self) -> None:
         """Initialize the specific LLM implementation."""
-        pass
 
     def _setup_prompts(self) -> None:
         """Set up the prompt templates with system message."""

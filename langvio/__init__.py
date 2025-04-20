@@ -15,6 +15,7 @@ registry = ModelRegistry()
 # Import main components for easier access
 from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
+
 # Register the YOLO processor
 from langvio.vision.yolo.detector import YOLOProcessor
 
@@ -64,7 +65,7 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
         try:
             default_llm = pipeline.config.config["llm"]["default"]
             pipeline.set_llm_processor(default_llm)
-        except Exception as e:
+        except Exception:
             # If we can't set a default LLM, check if any LLMs are available
             if len(registry.list_llm_processors()) == 0:
                 error_msg = (

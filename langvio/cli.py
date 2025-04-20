@@ -6,7 +6,6 @@ import argparse
 import logging
 import os
 import sys
-from typing import Any, Dict
 
 from langvio import create_pipeline
 from langvio.utils.file_utils import is_image_file, is_video_file

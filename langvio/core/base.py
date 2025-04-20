@@ -3,7 +3,7 @@ Base classes for langvio components
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 
 class Processor(ABC):
@@ -28,7 +28,6 @@ class Processor(ABC):
         Returns:
             True if initialization was successful
         """
-        pass
 
     @classmethod
     def from_config(cls, name: str, config: Dict[str, Any]) -> "Processor":
@@ -70,7 +69,6 @@ class Model(ABC):
         Returns:
             True if model was loaded successfully
         """
-        pass
 
     @abstractmethod
     def unload(self) -> bool:
@@ -80,4 +78,3 @@ class Model(ABC):
         Returns:
             True if model was unloaded successfully
         """
-        pass

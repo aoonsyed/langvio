@@ -2,10 +2,8 @@
 Enhanced utilities for vision processing
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-import cv2
-import numpy as np
 
 # from langvio.prompts.constants import (
 #     VISUAL_ATTRIBUTES,

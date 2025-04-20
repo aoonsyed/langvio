@@ -4,7 +4,6 @@ Example script for combined analysis capabilities with Langvio
 
 import logging
 import os
-from collections import defaultdict
 
 from langvio import create_pipeline
 

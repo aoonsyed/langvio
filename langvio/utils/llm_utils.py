@@ -4,7 +4,7 @@ Utility functions for LLM processing
 
 import json
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 
 def index_detections(

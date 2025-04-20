@@ -6,18 +6,14 @@ import importlib.util
 import os
 from unittest.mock import patch
 
-import pytest
 
 
 def test_imports():
     """Test basic imports of main modules."""
     # Test importing the package
     import langvio
+
     # Test importing key components
-    from langvio import create_pipeline, registry
-    from langvio.core.pipeline import Pipeline
-    from langvio.llm.base import BaseLLMProcessor
-    from langvio.vision.base import BaseVisionProcessor
 
     # Check package version
     assert hasattr(langvio, "__version__")

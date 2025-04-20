@@ -1,8 +1,10 @@
-import pytest
 
-from langvio.utils.llm_utils import (extract_object_ids, get_objects_by_ids,
-                                     index_detections,
-                                     parse_explanation_response)
+from langvio.utils.llm_utils import (
+    extract_object_ids,
+    get_objects_by_ids,
+    index_detections,
+    parse_explanation_response,
+)
 
 
 def test_index_detections():

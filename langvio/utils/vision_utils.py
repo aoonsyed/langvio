@@ -23,8 +23,10 @@ def add_spatial_context(
         return detections
 
     # Calculate relative positions
-    from langvio.vision.utils import (calculate_relative_positions,
-                                      detect_spatial_relationships)
+    from langvio.vision.utils import (
+        calculate_relative_positions,
+        detect_spatial_relationships,
+    )
 
     # Add relative positions based on image dimensions
     detections = calculate_relative_positions(detections, *dimensions)

@@ -4,7 +4,6 @@ Example script for counting objects with Langvio
 
 import logging
 import os
-from collections import Counter
 
 from langvio import create_pipeline
 
