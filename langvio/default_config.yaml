@@ -25,20 +25,35 @@ llm:
 vision:
   default: "yolo"
   models:
+    yoloe:
+      type: "yolo"
+      model_path: "yoloe-11s-seg-pf.pt"  # YOLOe nano - fastest
+      confidence: 0.5
+      model_type: "yoloe"
+
+    yoloe_medium:
+        type: "yolo"
+        model_path: "yoloe-11m-seg-pf.pt"  # YOLOe medium - balanced
+        confidence: 0.5
+        model_type: "yoloe"
+
+    yoloe_large:
+        type: "yolo"
+        model_path: "yoloe-11l-seg-pf.pt"  # YOLOe extra large - most accurate
+        confidence: 0.5
+        model_type: "yoloe"
     yolo:
       type: "yolo"
       model_path: "yolo11n.pt"  # Default: smallest/fastest model
-      confidence: 0.25
-
+      confidence: 0.5
     yolo_medium:
       type: "yolo"
       model_path: "yolo11m.pt"  # Medium model - balanced
-      confidence: 0.25
-
+      confidence: 0.5
     yolo_large:
       type: "yolo"
       model_path: "yolo11x.pt"  # Large model - most accurate
-      confidence: 0.25
+      confidence: 0.5
 
 media:
   output_dir: "./output"

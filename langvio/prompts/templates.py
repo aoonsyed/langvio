@@ -41,6 +41,7 @@ For counts, provide exact numbers.
 For verification queries, explicitly confirm or deny what was asked.
 Structure the response in a natural, conversational way.
 This section will be shown to the user.
+Make sure that explanation is quite natural explaining a image/video to a person.
 
 HIGHLIGHT_OBJECTS:
 List the exact object_ids of objects that should be highlighted in the visualization.

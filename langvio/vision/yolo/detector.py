@@ -8,7 +8,7 @@ import logging
 from typing import Dict, Any, List, Optional, Tuple
 
 import cv2
-from ultralytics import YOLO
+from ultralytics import YOLO, YOLOE
 
 from langvio.vision.base import BaseVisionProcessor
 from langvio.vision.utils import extract_detections
@@ -21,9 +21,9 @@ from langvio.prompts.constants import (
 class YOLOProcessor(BaseVisionProcessor):
     """Enhanced vision processor using YOLO models"""
 
-    def __init__(self, name: str = "yolo",
-                 model_path: str = "yolov11n.pt",
-                 confidence: float = DEFAULT_CONFIDENCE_THRESHOLD,
+    def __init__(self, name: str,
+                 model_path: str ,
+                 confidence: float,
                  **kwargs):
         """
         Initialize YOLO processor.
@@ -36,7 +36,7 @@ class YOLOProcessor(BaseVisionProcessor):
         """
         config = {
             "model_path": model_path,
-            "confidence": confidence,
+            "confidence": DEFAULT_CONFIDENCE_THRESHOLD,
             **kwargs
         }
         super().__init__(name, config)
@@ -52,7 +52,7 @@ class YOLOProcessor(BaseVisionProcessor):
         """
         try:
             self.logger.info(f"Loading YOLO model: {self.config['model_path']}")
-            self.model = YOLO(self.config["model_path"])
+            self.model = YOLO(self.config["model_path"]) if self.name == "yolo" else YOLOE(self.config["model_path"])
             return True
         except Exception as e:
             self.logger.error(f"Error loading YOLO model: {e}")

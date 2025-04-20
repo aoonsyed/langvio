@@ -19,6 +19,9 @@ from langvio.vision.base import BaseVisionProcessor
 # Register the YOLO processor
 from langvio.vision.yolo.detector import YOLOProcessor
 registry.register_vision_processor("yolo", YOLOProcessor)
+registry.register_vision_processor("yoloe_large", YOLOProcessor)
+registry.register_vision_processor("yoloe", YOLOProcessor)
+
 
 # Register LLM processors using the factory
 from langvio.llm.factory import register_llm_processors
@@ -48,7 +51,7 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
     if vision_name:
         pipeline.set_vision_processor(vision_name)
     else:
-        pipeline.set_vision_processor("yolo")
+        pipeline.set_vision_processor("yoloe_large")
 
     # Set the LLM processor if specified
     if llm_name:

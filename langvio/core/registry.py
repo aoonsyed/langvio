@@ -81,7 +81,7 @@ class ModelRegistry:
         # Combine default kwargs with provided kwargs (provided take precedence)
         combined_kwargs = {**default_kwargs, **kwargs}
 
-        return processor_class(**combined_kwargs)
+        return processor_class(name,**combined_kwargs)
 
     def list_llm_processors(self) -> Dict[str, Type]:
         """
