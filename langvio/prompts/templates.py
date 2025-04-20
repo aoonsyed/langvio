@@ -4,7 +4,8 @@ Enhanced prompt templates for LLM processors
 
 # Query parsing prompt template with extended capabilities
 QUERY_PARSING_TEMPLATE = """
-Translate the following natural language query about images/videos into structured commands for an object detection and analysis system.
+Translate the following natural language query about images/videos into structured commands for an object detection 
+and analysis system.
 
 Query: {query}
 

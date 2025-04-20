@@ -7,7 +7,6 @@ import os
 from unittest.mock import patch
 
 
-
 def test_imports():
     """Test basic imports of main modules."""
     # Test importing the package
@@ -63,7 +62,7 @@ def test_package_structure():
             parent_path = os.path.dirname(pkg_path)
             absolute_path = os.path.join(parent_path, module_path)
 
-            # Check only if we're in the correct environment (e.g., not in CI where paths might differ)
+            # Check only if we're in the correct environment
             if os.path.exists(parent_path):
                 assert os.path.exists(absolute_path), f"Missing module: {module_path}"
 

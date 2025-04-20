@@ -47,40 +47,41 @@ def test_get_file_extension():
 def test_is_image_file():
     """Test is_image_file function."""
     # Test with image file extensions
-    assert is_image_file("image.jpg") == True
-    assert is_image_file("image.jpeg") == True
-    assert is_image_file("image.png") == True
-    assert is_image_file("image.bmp") == True
-    assert is_image_file("image.tiff") == True
-    assert is_image_file("image.webp") == True
+    # With these:
+    assert is_image_file("image.jpg")
+    assert is_image_file("image.jpeg")
+    assert is_image_file("image.png")
+    assert is_image_file("image.bmp")
+    assert is_image_file("image.tiff")
+    assert is_image_file("image.webp")
 
     # Test with non-image file extensions
-    assert is_image_file("video.mp4") == False
-    assert is_image_file("document.pdf") == False
-    assert is_image_file("file_without_extension") == False
+    assert not is_image_file("video.mp4")
+    assert not is_image_file("document.pdf")
+    assert not is_image_file("file_without_extension")
 
     # Test case insensitivity
-    assert is_image_file("image.JPG") == True
-    assert is_image_file("image.PNG") == True
+    assert is_image_file("image.JPG")
+    assert is_image_file("image.PNG")
 
 
 def test_is_video_file():
     """Test is_video_file function."""
     # Test with video file extensions
-    assert is_video_file("video.mp4") == True
-    assert is_video_file("video.avi") == True
-    assert is_video_file("video.mov") == True
-    assert is_video_file("video.mkv") == True
-    assert is_video_file("video.webm") == True
+    assert is_video_file("video.mp4")
+    assert is_video_file("video.avi")
+    assert is_video_file("video.mov")
+    assert is_video_file("video.mkv")
+    assert is_video_file("video.webm")
 
     # Test with non-video file extensions
-    assert is_video_file("image.jpg") == False
-    assert is_video_file("document.pdf") == False
-    assert is_video_file("file_without_extension") == False
+    assert is_video_file("image.jpg")
+    assert is_video_file("document.pdf")
+    assert is_video_file("file_without_extension")
 
     # Test case insensitivity
-    assert is_video_file("video.MP4") == True
-    assert is_video_file("video.AVI") == True
+    assert is_video_file("video.MP4")
+    assert is_video_file("video.AVI")
 
 
 def test_create_temp_copy():

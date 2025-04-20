@@ -5,14 +5,13 @@ langvio: Connect language models to vision models for natural language visual an
 __version__ = "0.3.0"
 
 # Try to load environment variables from .env file
-
-from langvio.core.pipeline import Pipeline
 from langvio.core.registry import ModelRegistry
 
 # Initialize the global model registry
 registry = ModelRegistry()
 
 # Import main components for easier access
+from langvio.core.pipeline import Pipeline
 from langvio.llm.base import BaseLLMProcessor
 from langvio.vision.base import BaseVisionProcessor
 
@@ -44,8 +43,6 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
         A configured Pipeline instance
     """
     import sys
-
-    from langvio.core.pipeline import Pipeline
 
     # Create the pipeline
     pipeline = Pipeline(config_path)
