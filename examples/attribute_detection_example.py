@@ -62,6 +62,5 @@ def main():
                 print(f"- {det['label']} with confidence {det['confidence']:.2f}")
 
 
-
 if __name__ == "__main__":
     main()

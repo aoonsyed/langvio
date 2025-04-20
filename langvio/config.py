@@ -6,8 +6,8 @@ import os
 import yaml
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
-load_dotenv()  # Load environment variables from .env
 
+load_dotenv()  # Load environment variables from .env
 
 
 class Config:
@@ -36,7 +36,7 @@ class Config:
         """Load the default configuration from default_config.yaml"""
         try:
             if os.path.exists(self.DEFAULT_CONFIG_PATH):
-                with open(self.DEFAULT_CONFIG_PATH, 'r') as f:
+                with open(self.DEFAULT_CONFIG_PATH, "r") as f:
                     self.config = yaml.safe_load(f)
                     if self.config is None:  # Handle empty file case
                         self.config = {}
@@ -48,13 +48,13 @@ class Config:
                         "models": {
                             "gemini": {
                                 "model_name": "gemini-pro",
-                                "model_kwargs": {"temperature": 0.2}
+                                "model_kwargs": {"temperature": 0.2},
                             },
                             "gpt": {
                                 "model_name": "gpt-3.5-turbo",
-                                "model_kwargs": {"temperature": 0.0}
-                            }
-                        }
+                                "model_kwargs": {"temperature": 0.0},
+                            },
+                        },
                     },
                     "vision": {
                         "default": "yolo",
@@ -62,9 +62,9 @@ class Config:
                             "yolo": {
                                 "type": "yolo",
                                 "model_path": "yolov11n.pt",
-                                "confidence": 0.25
+                                "confidence": 0.25,
                             }
-                        }
+                        },
                     },
                     "media": {
                         "output_dir": "./output",
@@ -72,13 +72,10 @@ class Config:
                         "visualization": {
                             "box_color": [0, 255, 0],
                             "text_color": [255, 255, 255],
-                            "line_thickness": 2
-                        }
+                            "line_thickness": 2,
+                        },
                     },
-                    "logging": {
-                        "level": "INFO",
-                        "file": None
-                    }
+                    "logging": {"level": "INFO", "file": None},
                 }
         except Exception as e:
             raise ValueError(f"Error loading default configuration: {e}")
@@ -91,7 +88,7 @@ class Config:
             config_path: Path to a YAML configuration file
         """
         try:
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 user_config = yaml.safe_load(f)
                 if user_config is None:  # Handle empty file case
                     return
@@ -101,10 +98,16 @@ class Config:
         except Exception as e:
             raise ValueError(f"Error loading configuration from {config_path}: {e}")
 
-    def _update_config(self, base_config: Dict[str, Any], new_config: Dict[str, Any]) -> None:
+    def _update_config(
+        self, base_config: Dict[str, Any], new_config: Dict[str, Any]
+    ) -> None:
         """Recursively update base config with new config."""
         for key, value in new_config.items():
-            if isinstance(value, dict) and key in base_config and isinstance(base_config[key], dict):
+            if (
+                isinstance(value, dict)
+                and key in base_config
+                and isinstance(base_config[key], dict)
+            ):
                 self._update_config(base_config[key], value)
             else:
                 base_config[key] = value
@@ -180,7 +183,7 @@ class Config:
             config_path: Path to save the configuration
         """
         try:
-            with open(config_path, 'w') as f:
+            with open(config_path, "w") as f:
                 yaml.dump(self.config, f, default_flow_style=False)
         except Exception as e:
             raise ValueError(f"Error saving configuration to {config_path}: {e}")

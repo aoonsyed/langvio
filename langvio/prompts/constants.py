@@ -5,11 +5,11 @@ Constants for langvio package
 # Task types that the system can handle
 TASK_TYPES = [
     "identification",  # Basic object detection
-    "counting",        # Counting specific objects
-    "verification",    # Verifying existence of objects
-    "analysis",        # Detailed analysis with attributes and relationships
-    "tracking",        # For tracking objects across video frames
-    "activity",        # For detecting activities/actions
+    "counting",  # Counting specific objects
+    "verification",  # Verifying existence of objects
+    "analysis",  # Detailed analysis with attributes and relationships
+    "tracking",  # For tracking objects across video frames
+    "activity",  # For detecting activities/actions
 ]
 
 # Common attributes that can be detected
@@ -18,9 +18,9 @@ VISUAL_ATTRIBUTES = [
     "size",
     "shape",
     "posture",
-    "state",    # open/closed, on/off
+    "state",  # open/closed, on/off
     "texture",
-    "material"
+    "material",
 ]
 
 # Common spatial relationships between objects
@@ -38,7 +38,7 @@ SPATIAL_RELATIONS = [
     "behind",
     "between",
     "near",
-    "far"
+    "far",
 ]
 
 # Common object activities/actions (for videos)
@@ -52,24 +52,91 @@ ACTIVITIES = [
     "drinking",
     "talking",
     "moving",
-    "stationary"
+    "stationary",
 ]
 
 # Common COCO dataset object categories
 COMMON_OBJECTS = [
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
-    "truck", "boat", "traffic light", "fire hydrant", "stop sign",
-    "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep",
-    "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-    "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-    "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-    "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-    "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
-    "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
-    "couch", "potted plant", "bed", "dining table", "toilet", "tv",
-    "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave",
-    "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-    "scissors", "teddy bear", "hair drier", "toothbrush"
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted plant",
+    "bed",
+    "dining table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush",
 ]
 
 # Default detection confidence threshold

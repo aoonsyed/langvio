@@ -13,15 +13,20 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.output_parsers.json import SimpleJsonOutputParser
 
 from langvio.core.base import Processor
-from langvio.utils.llm_utils import index_detections, format_detection_summary, parse_explanation_response
+from langvio.utils.llm_utils import (
+    index_detections,
+    format_detection_summary,
+    parse_explanation_response,
+)
 from langvio.prompts.templates import (
     QUERY_PARSING_TEMPLATE,
     EXPLANATION_TEMPLATE,
-    SYSTEM_PROMPT
+    SYSTEM_PROMPT,
 )
 from langvio.prompts.constants import (
     TASK_TYPES,
 )
+
 
 class BaseLLMProcessor(Processor):
     """Enhanced base class for all LLM processors"""
@@ -53,24 +58,27 @@ class BaseLLMProcessor(Processor):
         """Initialize the specific LLM implementation."""
         pass
 
-
     def _setup_prompts(self) -> None:
         """Set up the prompt templates with system message."""
         system_message = SystemMessage(content=SYSTEM_PROMPT)
 
         # Query parsing prompt
-        self.query_chat_prompt = ChatPromptTemplate.from_messages([
-            system_message,
-            MessagesPlaceholder(variable_name="history"),
-            ("user", QUERY_PARSING_TEMPLATE)
-        ])
+        self.query_chat_prompt = ChatPromptTemplate.from_messages(
+            [
+                system_message,
+                MessagesPlaceholder(variable_name="history"),
+                ("user", QUERY_PARSING_TEMPLATE),
+            ]
+        )
 
         # Explanation prompt
-        self.explanation_chat_prompt = ChatPromptTemplate.from_messages([
-            system_message,
-            MessagesPlaceholder(variable_name="history"),
-            ("user", EXPLANATION_TEMPLATE)
-        ])
+        self.explanation_chat_prompt = ChatPromptTemplate.from_messages(
+            [
+                system_message,
+                MessagesPlaceholder(variable_name="history"),
+                ("user", EXPLANATION_TEMPLATE),
+            ]
+        )
 
         # Create chains
         json_parser = SimpleJsonOutputParser()
@@ -96,7 +104,7 @@ class BaseLLMProcessor(Processor):
         except Exception as e:
             self.logger.error(f"Error parsing query: {e}")
 
-            return {'error' : e}
+            return {"error": e}
 
     def _ensure_parsed_fields(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
         """Ensure all required fields exist in the parsed query."""
@@ -107,7 +115,7 @@ class BaseLLMProcessor(Processor):
             "attributes": [],
             "spatial_relations": [],
             "activities": [],
-            "custom_instructions": ""
+            "custom_instructions": "",
         }
 
         # Add any missing fields with defaults
@@ -117,12 +125,16 @@ class BaseLLMProcessor(Processor):
 
         # Ensure task_type is valid
         if parsed["task_type"] not in TASK_TYPES:
-            self.logger.warning(f"Invalid task type: {parsed['task_type']}. Using 'identification' instead.")
+            self.logger.warning(
+                f"Invalid task type: {parsed['task_type']}. Using 'identification' instead."
+            )
             parsed["task_type"] = "identification"
 
         return parsed
 
-    def generate_explanation(self, query: str, detections: Dict[str, List[Dict[str, Any]]]) -> str:
+    def generate_explanation(
+        self, query: str, detections: Dict[str, List[Dict[str, Any]]]
+    ) -> str:
         """Generate an explanation based on detection results."""
         self.logger.info("Generating explanation for detection results")
 
@@ -139,16 +151,20 @@ class BaseLLMProcessor(Processor):
         print(detections)
         try:
             # Invoke the explanation chain
-            response = self.explanation_chain.invoke({
-                "query": query,
-                "detection_summary": detection_summary,
-                "parsed_query": json.dumps(parsed_query, indent=2),
-                "history": []
-            })
+            response = self.explanation_chain.invoke(
+                {
+                    "query": query,
+                    "detection_summary": detection_summary,
+                    "parsed_query": json.dumps(parsed_query, indent=2),
+                    "history": [],
+                }
+            )
 
             # Parse the response
-            if response and hasattr(response, 'content'):
-                explanation_text, highlight_objects = parse_explanation_response(response.content, detection_map)
+            if response and hasattr(response, "content"):
+                explanation_text, highlight_objects = parse_explanation_response(
+                    response.content, detection_map
+                )
 
                 # Store the highlighted objects for visualization
                 self._highlighted_objects = highlight_objects
@@ -168,12 +184,8 @@ class BaseLLMProcessor(Processor):
         Returns:
             List of highlighted objects with frame references
         """
-        return getattr(self, '_highlighted_objects', [])
+        return getattr(self, "_highlighted_objects", [])
 
     def is_package_installed(self, package_name: str) -> bool:
         """Check if a Python package is installed."""
         return importlib.util.find_spec(package_name) is not None
-
-
-
-

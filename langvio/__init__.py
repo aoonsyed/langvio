@@ -18,6 +18,7 @@ from langvio.vision.base import BaseVisionProcessor
 
 # Register the YOLO processor
 from langvio.vision.yolo.detector import YOLOProcessor
+
 registry.register_vision_processor("yolo", YOLOProcessor)
 registry.register_vision_processor("yoloe_large", YOLOProcessor)
 registry.register_vision_processor("yoloe", YOLOProcessor)
@@ -25,6 +26,7 @@ registry.register_vision_processor("yoloe", YOLOProcessor)
 
 # Register LLM processors using the factory
 from langvio.llm.factory import register_llm_processors
+
 register_llm_processors(registry)
 
 
@@ -87,5 +89,5 @@ __all__ = [
     "create_pipeline",
     "registry",
     "BaseLLMProcessor",
-    "BaseVisionProcessor"
+    "BaseVisionProcessor",
 ]

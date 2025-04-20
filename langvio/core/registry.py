@@ -13,7 +13,9 @@ class ModelRegistry:
         self._llm_processors = {}
         self._vision_processors = {}
 
-    def register_llm_processor(self, name: str, processor_class: Type, **kwargs) -> None:
+    def register_llm_processor(
+        self, name: str, processor_class: Type, **kwargs
+    ) -> None:
         """
         Register an LLM processor.
 
@@ -24,7 +26,9 @@ class ModelRegistry:
         """
         self._llm_processors[name] = (processor_class, kwargs)
 
-    def register_vision_processor(self, name: str, processor_class: Type, **kwargs) -> None:
+    def register_vision_processor(
+        self, name: str, processor_class: Type, **kwargs
+    ) -> None:
         """
         Register a vision processor.
 
@@ -81,7 +85,7 @@ class ModelRegistry:
         # Combine default kwargs with provided kwargs (provided take precedence)
         combined_kwargs = {**default_kwargs, **kwargs}
 
-        return processor_class(name,**combined_kwargs)
+        return processor_class(name, **combined_kwargs)
 
     def list_llm_processors(self) -> Dict[str, Type]:
         """
@@ -109,7 +113,7 @@ class ModelRegistry:
             # Python < 3.8
             import importlib_metadata as metadata
 
-        for ep in metadata.entry_points(group='langvio.llm_processors'):
+        for ep in metadata.entry_points(group="langvio.llm_processors"):
             try:
                 processor_class = ep.load()
                 self.register_llm_processor(ep.name, processor_class)
@@ -117,7 +121,7 @@ class ModelRegistry:
                 # Log error and continue
                 print(f"Error loading LLM processor {ep.name}: {e}")
 
-        for ep in metadata.entry_points(group='langvio.vision_processors'):
+        for ep in metadata.entry_points(group="langvio.vision_processors"):
             try:
                 processor_class = ep.load()
                 self.register_vision_processor(ep.name, processor_class)

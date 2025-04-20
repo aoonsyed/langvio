@@ -31,7 +31,7 @@ class Processor(ABC):
         pass
 
     @classmethod
-    def from_config(cls, name: str, config: Dict[str, Any]) -> 'Processor':
+    def from_config(cls, name: str, config: Dict[str, Any]) -> "Processor":
         """
         Create a processor from configuration.
 

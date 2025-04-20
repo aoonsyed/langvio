@@ -16,29 +16,36 @@ from langvio.utils.file_utils import is_image_file, is_video_file
 def main():
     """Main entry point for the langvio CLI"""
     # Parse arguments
-    parser = argparse.ArgumentParser(description="langvio: Connect LLMs with video models")
+    parser = argparse.ArgumentParser(
+        description="langvio: Connect LLMs with video models"
+    )
 
     # Required arguments
     parser.add_argument("--query", "-q", required=True, help="Natural language query")
-    parser.add_argument("--media", "-m", required=True, help="Path to image or video file")
+    parser.add_argument(
+        "--media", "-m", required=True, help="Path to image or video file"
+    )
 
     # Optional arguments
     parser.add_argument("--config", "-c", help="Path to configuration file")
     parser.add_argument("--llm", "-l", help="LLM processor to use")
     parser.add_argument("--vision", "-v", help="Vision processor to use")
     parser.add_argument("--output", "-o", help="Output directory for processed media")
-    parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR"], default="INFO",
-                       help="Logging level")
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="INFO",
+        help="Logging level",
+    )
     parser.add_argument("--log-file", help="Path to log file")
-    parser.add_argument("--list-models", action="store_true", help="List available models and exit")
+    parser.add_argument(
+        "--list-models", action="store_true", help="List available models and exit"
+    )
 
     args = parser.parse_args()
 
     # Set up logging
-    setup_logging({
-        "level": args.log_level,
-        "file": args.log_file
-    })
+    setup_logging({"level": args.log_level, "file": args.log_file})
 
     logger = logging.getLogger(__name__)
 
@@ -60,9 +67,7 @@ def main():
     try:
         # Create pipeline
         pipeline = create_pipeline(
-            config_path=args.config,
-            llm_name=args.llm,
-            vision_name=args.vision
+            config_path=args.config, llm_name=args.llm, vision_name=args.vision
         )
 
         # Update output directory if specified

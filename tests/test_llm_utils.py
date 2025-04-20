@@ -3,7 +3,7 @@ from langvio.utils.llm_utils import (
     index_detections,
     extract_object_ids,
     get_objects_by_ids,
-    parse_explanation_response
+    parse_explanation_response,
 )
 
 
@@ -13,11 +13,9 @@ def test_index_detections():
     detections = {
         "0": [
             {"label": "person", "confidence": 0.9},
-            {"label": "car", "confidence": 0.8}
+            {"label": "car", "confidence": 0.8},
         ],
-        "10": [
-            {"label": "person", "confidence": 0.85}
-        ]
+        "10": [{"label": "person", "confidence": 0.85}],
     }
 
     # Call the function
@@ -88,16 +86,13 @@ def test_get_objects_by_ids():
     detection_map = {
         "obj_0": {
             "frame_key": "0",
-            "detection": {"label": "person", "confidence": 0.9}
+            "detection": {"label": "person", "confidence": 0.9},
         },
-        "obj_1": {
-            "frame_key": "0",
-            "detection": {"label": "car", "confidence": 0.8}
-        },
+        "obj_1": {"frame_key": "0", "detection": {"label": "car", "confidence": 0.8}},
         "obj_2": {
             "frame_key": "10",
-            "detection": {"label": "person", "confidence": 0.85}
-        }
+            "detection": {"label": "person", "confidence": 0.85},
+        },
     }
 
     # Get objects by IDs
@@ -126,12 +121,9 @@ def test_parse_explanation_response():
     detection_map = {
         "obj_0": {
             "frame_key": "0",
-            "detection": {"label": "person", "confidence": 0.9}
+            "detection": {"label": "person", "confidence": 0.9},
         },
-        "obj_1": {
-            "frame_key": "0",
-            "detection": {"label": "car", "confidence": 0.8}
-        }
+        "obj_1": {"frame_key": "0", "detection": {"label": "car", "confidence": 0.8}},
     }
 
     # Test with EXPLANATION and HIGHLIGHT_OBJECTS sections

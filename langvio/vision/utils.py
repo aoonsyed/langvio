@@ -43,27 +43,29 @@ def extract_detections(results) -> List[Dict[str, Any]]:
             area = width * height
 
             # Enhanced detection object with additional fields
-            detections.append({
-                "label": label,
-                "confidence": conf,
-                "bbox": [x1, y1, x2, y2],
-                "class_id": cls_id,
-                # Additional attributes for spatial and attribute analysis
-                "center": (center_x, center_y),
-                "dimensions": (width, height),
-                "area": area,
-                "relative_size": None,  # Will be calculated later based on image dimensions
-                "attributes": {},  # Placeholder for detected attributes
-                "activities": [],  # Placeholder for detected activities (for videos)
-                "relationships": []  # Will be populated during relationship analysis
-            })
+            detections.append(
+                {
+                    "label": label,
+                    "confidence": conf,
+                    "bbox": [x1, y1, x2, y2],
+                    "class_id": cls_id,
+                    # Additional attributes for spatial and attribute analysis
+                    "center": (center_x, center_y),
+                    "dimensions": (width, height),
+                    "area": area,
+                    "relative_size": None,  # Will be calculated later based on image dimensions
+                    "attributes": {},  # Placeholder for detected attributes
+                    "activities": [],  # Placeholder for detected activities (for videos)
+                    "relationships": [],  # Will be populated during relationship analysis
+                }
+            )
 
     return detections
 
 
-def calculate_relative_positions(detections: List[Dict[str, Any]],
-                                 image_width: int,
-                                 image_height: int) -> List[Dict[str, Any]]:
+def calculate_relative_positions(
+    detections: List[Dict[str, Any]], image_width: int, image_height: int
+) -> List[Dict[str, Any]]:
     """
     Calculate relative positions and sizes of detections.
 
@@ -110,8 +112,9 @@ def calculate_relative_positions(detections: List[Dict[str, Any]],
     return detections
 
 
-def detect_spatial_relationships(detections: List[Dict[str, Any]],
-                                 distance_threshold: float = 0.2) -> List[Dict[str, Any]]:
+def detect_spatial_relationships(
+    detections: List[Dict[str, Any]], distance_threshold: float = 0.2
+) -> List[Dict[str, Any]]:
     """
     Detect spatial relationships between objects.
 
@@ -137,11 +140,7 @@ def detect_spatial_relationships(detections: List[Dict[str, Any]],
             box2 = det2["bbox"]
 
             # Initialize relationship entry
-            relationship = {
-                "object": det2["label"],
-                "object_id": j,
-                "relations": []
-            }
+            relationship = {"object": det2["label"], "object_id": j, "relations": []}
 
             # Check left/right
             if center1_x < center2_x:
@@ -156,8 +155,12 @@ def detect_spatial_relationships(detections: List[Dict[str, Any]],
                 relationship["relations"].append("below")
 
             # Check near
-            distance = ((center1_x - center2_x) ** 2 + (center1_y - center2_y) ** 2) ** 0.5
-            if distance < distance_threshold * (det1["dimensions"][0] + det2["dimensions"][0]):
+            distance = (
+                (center1_x - center2_x) ** 2 + (center1_y - center2_y) ** 2
+            ) ** 0.5
+            if distance < distance_threshold * (
+                det1["dimensions"][0] + det2["dimensions"][0]
+            ):
                 relationship["relations"].append("near")
             else:
                 relationship["relations"].append("far")
@@ -177,8 +180,9 @@ def detect_spatial_relationships(detections: List[Dict[str, Any]],
     return detections
 
 
-def detect_activities(frame_detections: Dict[str, List[Dict[str, Any]]],
-                      min_frames: int = 3) -> Dict[str, List[Dict[str, Any]]]:
+def detect_activities(
+    frame_detections: Dict[str, List[Dict[str, Any]]], min_frames: int = 3
+) -> Dict[str, List[Dict[str, Any]]]:
     """
     Detect activities across video frames based on object positions.
 
@@ -217,10 +221,14 @@ def detect_activities(frame_detections: Dict[str, List[Dict[str, Any]]],
                     continue
 
                 # Check the last position in the track
-                if track["frames"] and frame_num - track["frames"][-1] <= 5:  # Max gap of 5 frames
+                if (
+                    track["frames"] and frame_num - track["frames"][-1] <= 5
+                ):  # Max gap of 5 frames
                     last_pos = track["positions"][-1]
-                    distance = ((det_center[0] - last_pos[0]) ** 2 +
-                               (det_center[1] - last_pos[1]) ** 2) ** 0.5
+                    distance = (
+                        (det_center[0] - last_pos[0]) ** 2
+                        + (det_center[1] - last_pos[1]) ** 2
+                    ) ** 0.5
 
                     # If close enough, consider it the same object
                     if distance < 50:  # Threshold can be adjusted
@@ -241,7 +249,7 @@ def detect_activities(frame_detections: Dict[str, List[Dict[str, Any]]],
                     "label": det_label,
                     "frames": [frame_num],
                     "positions": [det_center],
-                    "detections": {frame_idx: det}
+                    "detections": {frame_idx: det},
                 }
                 det["track_id"] = track_id
                 matched_ids.add(track_id)
@@ -256,7 +264,7 @@ def detect_activities(frame_detections: Dict[str, List[Dict[str, Any]]],
         total_distance = 0
 
         for i in range(1, len(track["positions"])):
-            pos1 = track["positions"][i-1]
+            pos1 = track["positions"][i - 1]
             pos2 = track["positions"][i]
             distance = ((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2) ** 0.5
             total_distance += distance
@@ -287,8 +295,9 @@ def detect_activities(frame_detections: Dict[str, List[Dict[str, Any]]],
     return frame_detections
 
 
-def filter_by_attributes(detections: List[Dict[str, Any]],
-                         required_attributes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def filter_by_attributes(
+    detections: List[Dict[str, Any]], required_attributes: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     """
     Filter detections by required attributes.
 
@@ -317,7 +326,10 @@ def filter_by_attributes(detections: List[Dict[str, Any]],
                 continue
 
             # Check if the detection has this attribute with matching value
-            if attr_name not in det["attributes"] or det["attributes"][attr_name] != attr_value:
+            if (
+                attr_name not in det["attributes"]
+                or det["attributes"][attr_name] != attr_value
+            ):
                 matches_all = False
                 break
 
@@ -327,8 +339,9 @@ def filter_by_attributes(detections: List[Dict[str, Any]],
     return filtered
 
 
-def filter_by_spatial_relations(detections: List[Dict[str, Any]],
-                              required_relations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def filter_by_spatial_relations(
+    detections: List[Dict[str, Any]], required_relations: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     """
     Filter detections by required spatial relationships.
 
@@ -360,7 +373,10 @@ def filter_by_spatial_relations(detections: List[Dict[str, Any]],
             has_relation = False
 
             for rel in det["relationships"]:
-                if rel["object"].lower() == target_object.lower() and relation_type in rel["relations"]:
+                if (
+                    rel["object"].lower() == target_object.lower()
+                    and relation_type in rel["relations"]
+                ):
                     has_relation = True
                     break
 
@@ -374,8 +390,9 @@ def filter_by_spatial_relations(detections: List[Dict[str, Any]],
     return filtered
 
 
-def filter_by_activities(detections: List[Dict[str, Any]],
-                        required_activities: List[str]) -> List[Dict[str, Any]]:
+def filter_by_activities(
+    detections: List[Dict[str, Any]], required_activities: List[str]
+) -> List[Dict[str, Any]]:
     """
     Filter detections by required activities.
 

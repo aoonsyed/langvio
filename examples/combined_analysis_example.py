@@ -12,6 +12,7 @@ from langvio import create_pipeline
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
+
 def main():
     """Run a comprehensive combined analysis example"""
     # Create default pipeline
@@ -37,8 +38,6 @@ def main():
         # Display results
         print(f"Output saved to: {result['output_path']}")
         print(f"Explanation: {result['explanation']}")
-
-
 
     # Example for complex video analysis
     video_path = "examples/data/traffic_video.mp4"  # Replace with your video path
@@ -139,6 +138,7 @@ def main():
     #             print(f"- Stationary {vehicle_type} (ID {track_id}) for {duration} frames")
     #     else:
     #         print("- No unusual events detected")
+
 
 if __name__ == "__main__":
     main()

@@ -16,7 +16,7 @@ from langvio.vision.utils import (
     detect_activities,
     filter_by_attributes,
     filter_by_spatial_relations,
-    filter_by_activities
+    filter_by_activities,
 )
 from langvio.prompts.constants import DEFAULT_VIDEO_SAMPLE_RATE
 
@@ -36,7 +36,9 @@ class BaseVisionProcessor(Processor):
         self.model = None
 
     @abstractmethod
-    def process_image(self, image_path: str, query_params: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    def process_image(
+        self, image_path: str, query_params: Dict[str, Any]
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Process an image with the vision model.
 
@@ -50,8 +52,12 @@ class BaseVisionProcessor(Processor):
         pass
 
     @abstractmethod
-    def process_video(self, video_path: str, query_params: Dict[str, Any],
-                      sample_rate: int = DEFAULT_VIDEO_SAMPLE_RATE) -> Dict[str, List[Dict[str, Any]]]:
+    def process_video(
+        self,
+        video_path: str,
+        query_params: Dict[str, Any],
+        sample_rate: int = DEFAULT_VIDEO_SAMPLE_RATE,
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Process a video with the vision model.
 
@@ -65,9 +71,12 @@ class BaseVisionProcessor(Processor):
         """
         pass
 
-    def _filter_detections(self, detections: List[Dict[str, Any]],
-                           query_params: Dict[str, Any],
-                           image_dimensions: Optional[Tuple[int, int]] = None) -> List[Dict[str, Any]]:
+    def _filter_detections(
+        self,
+        detections: List[Dict[str, Any]],
+        query_params: Dict[str, Any],
+        image_dimensions: Optional[Tuple[int, int]] = None,
+    ) -> List[Dict[str, Any]]:
         """
         Enhanced filter detections method with attribute and relationship support.
 
@@ -95,7 +104,9 @@ class BaseVisionProcessor(Processor):
 
         # Filter by target objects if specified
         if target_objects:
-            detections = [det for det in detections if det["label"].lower() in target_objects]
+            detections = [
+                det for det in detections if det["label"].lower() in target_objects
+            ]
 
         # Filter by required attributes if specified
         if "attributes" in query_params and query_params["attributes"]:
@@ -103,7 +114,9 @@ class BaseVisionProcessor(Processor):
 
         # Filter by spatial relations if specified
         if "spatial_relations" in query_params and query_params["spatial_relations"]:
-            detections = filter_by_spatial_relations(detections, query_params["spatial_relations"])
+            detections = filter_by_spatial_relations(
+                detections, query_params["spatial_relations"]
+            )
 
         # Filter by activities if specified (mainly for videos)
         if "activities" in query_params and query_params["activities"]:
@@ -111,8 +124,11 @@ class BaseVisionProcessor(Processor):
 
         return detections
 
-    def _analyze_video_for_activities(self, frame_detections: Dict[str, List[Dict[str, Any]]],
-                                    query_params: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    def _analyze_video_for_activities(
+        self,
+        frame_detections: Dict[str, List[Dict[str, Any]]],
+        query_params: Dict[str, Any],
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Analyze video frames to detect activities.
 
@@ -124,7 +140,10 @@ class BaseVisionProcessor(Processor):
             Updated frame detections with activity information
         """
         # Skip if not asking for activity detection
-        if not query_params.get("activities") and query_params.get("task_type") != "activity":
+        if (
+            not query_params.get("activities")
+            and query_params.get("task_type") != "activity"
+        ):
             return frame_detections
 
         # Perform activity detection across frames
@@ -149,8 +168,9 @@ class BaseVisionProcessor(Processor):
             pass
         return None
 
-    def _enhance_detections_with_attributes(self, detections: List[Dict[str, Any]],
-                                           image_path: str) -> List[Dict[str, Any]]:
+    def _enhance_detections_with_attributes(
+        self, detections: List[Dict[str, Any]], image_path: str
+    ) -> List[Dict[str, Any]]:
         """
         Enhance detections with attribute information.
         Subclasses can override this to add more sophisticated attribute detection.
@@ -175,7 +195,14 @@ class BaseVisionProcessor(Processor):
                 x1, y1, x2, y2 = det["bbox"]
 
                 # Skip invalid boxes
-                if x1 >= x2 or y1 >= y2 or x1 < 0 or y1 < 0 or x2 > image_width or y2 > image_height:
+                if (
+                    x1 >= x2
+                    or y1 >= y2
+                    or x1 < 0
+                    or y1 < 0
+                    or x2 > image_width
+                    or y2 > image_height
+                ):
                     continue
 
                 # Get the object region
@@ -210,7 +237,9 @@ class BaseVisionProcessor(Processor):
                     det["attributes"]["is_multicolored"] = color_info["is_multicolored"]
 
                     # Optionally add all detected colors
-                    det["attributes"]["colors"] = list(color_info["color_percentages"].keys())
+                    det["attributes"]["colors"] = list(
+                        color_info["color_percentages"].keys()
+                    )
 
         except Exception:
             # In case of any errors, return original detections

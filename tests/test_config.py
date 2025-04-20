@@ -33,9 +33,9 @@ def test_custom_config_loading():
             "models": {
                 "test-llm": {
                     "model_name": "test-model",
-                    "model_kwargs": {"temperature": 0.5}
+                    "model_kwargs": {"temperature": 0.5},
                 }
-            }
+            },
         },
         "vision": {
             "default": "test-vision",
@@ -43,9 +43,9 @@ def test_custom_config_loading():
                 "test-vision": {
                     "type": "test",
                     "model_path": "test-model.pt",
-                    "confidence": 0.3
+                    "confidence": 0.3,
                 }
-            }
+            },
         },
         "media": {
             "output_dir": "./test-output",
@@ -53,16 +53,13 @@ def test_custom_config_loading():
             "visualization": {
                 "box_color": [255, 0, 0],
                 "text_color": [0, 0, 0],
-                "line_thickness": 3
-            }
+                "line_thickness": 3,
+            },
         },
-        "logging": {
-            "level": "DEBUG",
-            "file": "test.log"
-        }
+        "logging": {"level": "DEBUG", "file": "test.log"},
     }
 
-    with tempfile.NamedTemporaryFile(suffix=".yaml",  mode="w",delete=False) as temp:
+    with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as temp:
         temp_path = temp.name
         yaml.dump(test_config, temp)
 
@@ -93,16 +90,16 @@ def test_get_specific_configs():
             "default": "default-llm",
             "models": {
                 "default-llm": {"model_name": "default-model"},
-                "other-llm": {"model_name": "other-model"}
-            }
+                "other-llm": {"model_name": "other-model"},
+            },
         },
         "vision": {
             "default": "default-vision",
             "models": {
                 "default-vision": {"type": "default-type"},
-                "other-vision": {"type": "other-type"}
-            }
-        }
+                "other-vision": {"type": "other-type"},
+            },
+        },
     }
 
     with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as temp:

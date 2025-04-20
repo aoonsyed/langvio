@@ -11,10 +11,13 @@ from langvio.llm.base import BaseLLMProcessor
 class OpenAIProcessor(BaseLLMProcessor):
     """LLM processor using OpenAI models via LangChain"""
 
-    def __init__(self, name: str = "openai",
-                 model_name: str = "gpt-3.5-turbo",
-                 model_kwargs: Optional[Dict[str, Any]] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        name: str = "openai",
+        model_name: str = "gpt-3.5-turbo",
+        model_kwargs: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         """
         Initialize OpenAI processor.
 
@@ -27,7 +30,7 @@ class OpenAIProcessor(BaseLLMProcessor):
         config = {
             "model_name": model_name,
             "model_kwargs": model_kwargs or {},
-            **kwargs
+            **kwargs,
         }
         super().__init__(name, config)
         self.logger = logging.getLogger(__name__)
@@ -61,10 +64,7 @@ class OpenAIProcessor(BaseLLMProcessor):
                 raise
             else:
                 # Create the OpenAI LLM
-                self.llm = ChatOpenAI(
-                    model_name=model_name,
-                    **model_kwargs
-                )
+                self.llm = ChatOpenAI(model_name=model_name, **model_kwargs)
 
             self.logger.info(f"Initialized OpenAI model: {model_name}")
         except Exception as e:

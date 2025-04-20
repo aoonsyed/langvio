@@ -24,7 +24,7 @@ def test_imports():
     assert isinstance(langvio.__version__, str)
 
 
-@patch('langvio.registry')
+@patch("langvio.registry")
 def test_api_access(mock_registry, sample_config_path):
     """Test access to main API functions."""
     # Import the package
@@ -57,7 +57,7 @@ def test_package_structure():
         "langvio/utils/file_utils.py",
         "langvio/utils/logging.py",
         "langvio/utils/llm_utils.py",
-        "langvio/utils/vision_utils.py"
+        "langvio/utils/vision_utils.py",
     ]
 
     for module_path in core_modules:

@@ -31,7 +31,9 @@ def test_llm_processor_registration():
     registry = ModelRegistry()
 
     # Register an LLM processor
-    registry.register_llm_processor("test-llm", MockLLMProcessor, test_param="test_value")
+    registry.register_llm_processor(
+        "test-llm", MockLLMProcessor, test_param="test_value"
+    )
 
     # Check if it's registered
     processors = registry.list_llm_processors()
@@ -53,7 +55,9 @@ def test_vision_processor_registration():
     registry = ModelRegistry()
 
     # Register a vision processor
-    registry.register_vision_processor("test-vision", MockVisionProcessor, test_param="test_value")
+    registry.register_vision_processor(
+        "test-vision", MockVisionProcessor, test_param="test_value"
+    )
 
     # Check if it's registered
     processors = registry.list_vision_processors()
@@ -79,7 +83,9 @@ def test_get_nonexistent_processor():
         registry.get_llm_processor("nonexistent")
 
     # Getting non-existent vision processor should raise ValueError
-    with pytest.raises(ValueError, match="Vision processor 'nonexistent' not registered"):
+    with pytest.raises(
+        ValueError, match="Vision processor 'nonexistent' not registered"
+    ):
         registry.get_vision_processor("nonexistent")
 
 

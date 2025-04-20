@@ -52,8 +52,8 @@ def mock_video_path(test_dir):
     video_path = os.path.join(test_dir, "sample_video.mp4")
 
     # Create an empty file
-    with open(video_path, 'wb') as f:
-        f.write(b'dummy video content')
+    with open(video_path, "wb") as f:
+        f.write(b"dummy video content")
 
     yield video_path
 
@@ -71,9 +71,9 @@ def sample_config_dict():
             "models": {
                 "test-llm": {
                     "model_name": "test-model",
-                    "model_kwargs": {"temperature": 0.5}
+                    "model_kwargs": {"temperature": 0.5},
                 }
-            }
+            },
         },
         "vision": {
             "default": "test-vision",
@@ -81,9 +81,9 @@ def sample_config_dict():
                 "test-vision": {
                     "type": "test",
                     "model_path": "test-model.pt",
-                    "confidence": 0.3
+                    "confidence": 0.3,
                 }
-            }
+            },
         },
         "media": {
             "output_dir": "./test-output",
@@ -91,13 +91,10 @@ def sample_config_dict():
             "visualization": {
                 "box_color": [255, 0, 0],
                 "text_color": [0, 0, 0],
-                "line_thickness": 3
-            }
+                "line_thickness": 3,
+            },
         },
-        "logging": {
-            "level": "DEBUG",
-            "file": "test.log"
-        }
+        "logging": {"level": "DEBUG", "file": "test.log"},
     }
 
 
@@ -130,10 +127,7 @@ def sample_detections():
                 "center": (60, 120),
                 "dimensions": (100, 200),
                 "area": 20000,
-                "attributes": {
-                    "color": "red",
-                    "size": "medium"
-                }
+                "attributes": {"color": "red", "size": "medium"},
             },
             {
                 "label": "car",
@@ -143,11 +137,8 @@ def sample_detections():
                 "center": (300, 350),
                 "dimensions": (200, 100),
                 "area": 20000,
-                "attributes": {
-                    "color": "blue",
-                    "size": "large"
-                }
-            }
+                "attributes": {"color": "blue", "size": "large"},
+            },
         ]
     }
 
@@ -162,7 +153,7 @@ def sample_video_detections():
                 "confidence": 0.92,
                 "bbox": [10, 20, 110, 220],
                 "track_id": 1,
-                "activities": ["walking"]
+                "activities": ["walking"],
             }
         ],
         "5": [
@@ -171,7 +162,7 @@ def sample_video_detections():
                 "confidence": 0.90,
                 "bbox": [15, 25, 115, 225],
                 "track_id": 1,
-                "activities": ["walking"]
+                "activities": ["walking"],
             }
         ],
         "10": [
@@ -180,14 +171,14 @@ def sample_video_detections():
                 "confidence": 0.88,
                 "bbox": [20, 30, 120, 230],
                 "track_id": 1,
-                "activities": ["running"]
+                "activities": ["running"],
             },
             {
                 "label": "car",
                 "confidence": 0.85,
                 "bbox": [200, 300, 400, 400],
                 "track_id": 2,
-                "activities": ["moving"]
-            }
-        ]
+                "activities": ["moving"],
+            },
+        ],
     }

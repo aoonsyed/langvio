@@ -28,7 +28,7 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
     console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     console_handler.setFormatter(console_formatter)
     handlers.append(console_handler)
@@ -44,14 +44,10 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(level)
         file_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(file_formatter)
         handlers.append(file_handler)
 
     # Configure root logger
-    logging.basicConfig(
-        level=level,
-        handlers=handlers,
-        force=True
-    )
+    logging.basicConfig(level=level, handlers=handlers, force=True)

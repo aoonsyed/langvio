@@ -7,11 +7,13 @@ import numpy as np
 from typing import Dict, Any, List, Tuple, Union
 
 
-def draw_detections_on_image(image: np.ndarray,
-                             detections: List[Dict[str, Any]],
-                             box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
-                             text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
-                             line_thickness: int = 2) -> np.ndarray:
+def draw_detections_on_image(
+    image: np.ndarray,
+    detections: List[Dict[str, Any]],
+    box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
+    text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
+    line_thickness: int = 2,
+) -> np.ndarray:
     """
     Draw detections on an image.
 
@@ -43,20 +45,36 @@ def draw_detections_on_image(image: np.ndarray,
         text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)[0]
 
         # Draw text background
-        cv2.rectangle(output_image, (x1, y1 - text_size[1] - 5), (x1 + text_size[0], y1), box_color, -1)
+        cv2.rectangle(
+            output_image,
+            (x1, y1 - text_size[1] - 5),
+            (x1 + text_size[0], y1),
+            box_color,
+            -1,
+        )
 
         # Draw text
-        cv2.putText(output_image, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_color, 2)
+        cv2.putText(
+            output_image,
+            label,
+            (x1, y1 - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            text_color,
+            2,
+        )
 
     return output_image
 
 
-def draw_detections_on_video(input_path: str,
-                             output_path: str,
-                             frame_detections: Dict[str, List[Dict[str, Any]]],
-                             box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
-                             text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
-                             line_thickness: int = 2) -> None:
+def draw_detections_on_video(
+    input_path: str,
+    output_path: str,
+    frame_detections: Dict[str, List[Dict[str, Any]]],
+    box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
+    text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
+    line_thickness: int = 2,
+) -> None:
     """
     Draw detections on a video.
 
@@ -79,7 +97,7 @@ def draw_detections_on_video(input_path: str,
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     # Create video writer
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     # Process frames
@@ -98,7 +116,7 @@ def draw_detections_on_video(input_path: str,
                 frame_detections[str(frame_idx)],
                 box_color,
                 text_color,
-                line_thickness
+                line_thickness,
             )
 
         # Write frame

@@ -11,10 +11,13 @@ from langvio.llm.base import BaseLLMProcessor
 class GeminiProcessor(BaseLLMProcessor):
     """LLM processor using Google Gemini models via LangChain"""
 
-    def __init__(self, name: str = "gemini",
-                 model_name: str = "gemini-pro",
-                 model_kwargs: Optional[Dict[str, Any]] = None,
-                 **kwargs):
+    def __init__(
+        self,
+        name: str = "gemini",
+        model_name: str = "gemini-pro",
+        model_kwargs: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         """
         Initialize Gemini processor.
 
@@ -27,7 +30,7 @@ class GeminiProcessor(BaseLLMProcessor):
         config = {
             "model_name": model_name,
             "model_kwargs": model_kwargs or {},
-            **kwargs
+            **kwargs,
         }
         super().__init__(name, config)
         self.logger = logging.getLogger(__name__)
@@ -48,6 +51,7 @@ class GeminiProcessor(BaseLLMProcessor):
             # Import necessary components
             from langchain_google_genai import ChatGoogleGenerativeAI
             import os
+
             # Get model configuration
             model_name = self.config["model_name"]
             model_kwargs = self.config["model_kwargs"].copy()
@@ -61,10 +65,7 @@ class GeminiProcessor(BaseLLMProcessor):
                 raise
 
             # Create the Gemini LLM
-            self.llm = ChatGoogleGenerativeAI(
-                model=model_name,
-                **model_kwargs
-            )
+            self.llm = ChatGoogleGenerativeAI(model=model_name, **model_kwargs)
 
             self.logger.info(f"Initialized Google Gemini model: {model_name}")
         except Exception as e:

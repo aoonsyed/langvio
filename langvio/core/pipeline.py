@@ -90,13 +90,17 @@ class Pipeline:
 
         # Create processor
         try:
-            self.llm_processor = registry.get_llm_processor(processor_name, **processor_config)
+            self.llm_processor = registry.get_llm_processor(
+                processor_name, **processor_config
+            )
 
             # Explicitly initialize the processor
             self.llm_processor.initialize()
 
         except Exception as e:
-            error_msg = f"ERROR: Failed to initialize LLM processor '{processor_name}': {e}"
+            error_msg = (
+                f"ERROR: Failed to initialize LLM processor '{processor_name}': {e}"
+            )
             self.logger.error(error_msg)
             print(error_msg, file=sys.stderr)
             sys.exit(1)
@@ -124,9 +128,13 @@ class Pipeline:
 
         # Create processor
         try:
-            self.vision_processor = registry.get_vision_processor(processor_name, **processor_config)
+            self.vision_processor = registry.get_vision_processor(
+                processor_name, **processor_config
+            )
         except Exception as e:
-            error_msg = f"ERROR: Failed to initialize vision processor '{processor_name}': {e}"
+            error_msg = (
+                f"ERROR: Failed to initialize vision processor '{processor_name}': {e}"
+            )
             self.logger.error(error_msg)
             print(error_msg, file=sys.stderr)
             sys.exit(1)
@@ -185,10 +193,14 @@ class Pipeline:
                 sample_rate = 2
 
             # Get all detections without filtering
-            all_detections = self.vision_processor.process_video(media_path, query_params, sample_rate)
+            all_detections = self.vision_processor.process_video(
+                media_path, query_params, sample_rate
+            )
         else:
             # Get all detections without filtering
-            all_detections = self.vision_processor.process_image(media_path, query_params)
+            all_detections = self.vision_processor.process_image(
+                media_path, query_params
+            )
 
             # Generate explanation using ALL detected objects
         explanation = self.llm_processor.generate_explanation(query, all_detections)
@@ -197,8 +209,9 @@ class Pipeline:
         highlighted_objects = self.llm_processor.get_highlighted_objects()
 
         # Create visualization with highlighted objects
-        output_path = self._create_visualization(media_path, all_detections, highlighted_objects, query_params,
-                                                 is_video)
+        output_path = self._create_visualization(
+            media_path, all_detections, highlighted_objects, query_params, is_video
+        )
 
         # Prepare result
         result = {
@@ -209,7 +222,7 @@ class Pipeline:
             "explanation": explanation,
             "detections": all_detections,
             "query_params": query_params,
-            "highlighted_objects": highlighted_objects
+            "highlighted_objects": highlighted_objects,
         }
 
         self.logger.info(f"Processed query successfully")
@@ -251,9 +264,14 @@ class Pipeline:
 
         return viz_config
 
-    def _create_visualization(self, media_path: str, all_detections: Dict[str, List[Dict[str, Any]]],
-                              highlighted_objects: List[Dict[str, Any]], query_params: Dict[str, Any],
-                              is_video: bool) -> str:
+    def _create_visualization(
+        self,
+        media_path: str,
+        all_detections: Dict[str, List[Dict[str, Any]]],
+        highlighted_objects: List[Dict[str, Any]],
+        query_params: Dict[str, Any],
+        is_video: bool,
+    ) -> str:
         """
         Create visualization with highlighted objects and return the output path.
 
@@ -268,8 +286,10 @@ class Pipeline:
             Path to the output visualization
         """
         # Import vision utils
-        from langvio.utils.vision_utils import create_visualization_detections_for_video, \
-            create_visualization_detections_for_image
+        from langvio.utils.vision_utils import (
+            create_visualization_detections_for_video,
+            create_visualization_detections_for_image,
+        )
 
         # Generate output path
         output_path = self.media_processor.get_output_path(media_path)
@@ -279,17 +299,29 @@ class Pipeline:
 
         if is_video:
             # Create visualization detections for video
-            visualization_detections = create_visualization_detections_for_video(all_detections, highlighted_objects)
+            visualization_detections = create_visualization_detections_for_video(
+                all_detections, highlighted_objects
+            )
 
             # Visualize video
-            self.media_processor.visualize_video(media_path, output_path, visualization_detections,
-                                                 **visualization_config)
+            self.media_processor.visualize_video(
+                media_path,
+                output_path,
+                visualization_detections,
+                **visualization_config,
+            )
         else:
             # Create visualization detections for image
-            visualization_detections = create_visualization_detections_for_image(highlighted_objects)
+            visualization_detections = create_visualization_detections_for_image(
+                highlighted_objects
+            )
 
             # Visualize image
-            self.media_processor.visualize_image(media_path, output_path, visualization_detections,
-                                                 **visualization_config)
+            self.media_processor.visualize_image(
+                media_path,
+                output_path,
+                visualization_detections,
+                **visualization_config,
+            )
 
         return output_path

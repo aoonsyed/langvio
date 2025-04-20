@@ -21,7 +21,6 @@ def main():
     output_dir = "./output"
     os.makedirs(output_dir, exist_ok=True)
 
-
     # Example for video counting
     video_path = "data/traffic_video.mp4"  # Replace with your video path
 
@@ -38,7 +37,6 @@ def main():
         # Display results
         print(f"Output saved to: {result['output_path']}")
         print(f"Explanation: {result['explanation']}")
-
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from langvio.utils.file_utils import (
     is_image_file,
     is_video_file,
     create_temp_copy,
-    get_files_in_directory
+    get_files_in_directory,
 )
 
 
@@ -37,7 +37,9 @@ def test_get_file_extension():
     assert get_file_extension("path/to/file.jpg") == ".jpg"
     assert get_file_extension("file.with.multiple.dots.png") == ".png"
     assert get_file_extension("file_without_extension") == ""
-    assert get_file_extension("/absolute/path/file.MP4") == ".mp4"  # Should be lowercase
+    assert (
+        get_file_extension("/absolute/path/file.MP4") == ".mp4"
+    )  # Should be lowercase
     assert get_file_extension("") == ""
 
 
@@ -99,7 +101,7 @@ def test_create_temp_copy():
             assert os.path.splitext(temp_copy)[1] == os.path.splitext(temp_path)[1]
 
             # Check if content is copied
-            with open(temp_copy, 'rb') as f:
+            with open(temp_copy, "rb") as f:
                 content = f.read()
                 assert content == b"test content"
         finally:
@@ -120,11 +122,11 @@ def test_get_files_in_directory():
             os.path.join(tempdir, "file1.txt"),
             os.path.join(tempdir, "file2.jpg"),
             os.path.join(tempdir, "file3.mp4"),
-            os.path.join(tempdir, "subdir")
+            os.path.join(tempdir, "subdir"),
         ]
 
         for path in file_paths[:3]:  # Create the files
-            with open(path, 'w') as f:
+            with open(path, "w") as f:
                 f.write("test")
 
         os.mkdir(file_paths[3])  # Create the subdirectory

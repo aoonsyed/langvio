@@ -27,14 +27,18 @@ class MockLLMProcessor(BaseLLMProcessor):
             "attributes": [],
             "spatial_relations": [],
             "activities": [],
-            "custom_instructions": ""
+            "custom_instructions": "",
         }
 
     def generate_explanation(self, query, detections):
         self._highlighted_objects = [
             {
                 "frame_key": "0",
-                "detection": {"label": "person", "confidence": 0.9, "bbox": [10, 10, 50, 50]}
+                "detection": {
+                    "label": "person",
+                    "confidence": 0.9,
+                    "bbox": [10, 10, 50, 50],
+                },
             }
         ]
         return "I detected a person in the image."
@@ -56,14 +60,14 @@ class MockVisionProcessor(BaseVisionProcessor):
         return {
             "0": [
                 {"label": "person", "confidence": 0.9, "bbox": [10, 10, 50, 50]},
-                {"label": "car", "confidence": 0.8, "bbox": [100, 100, 200, 150]}
+                {"label": "car", "confidence": 0.8, "bbox": [100, 100, 200, 150]},
             ]
         }
 
     def process_video(self, video_path, query_params, sample_rate=5):
         return {
             "0": [{"label": "person", "confidence": 0.9, "bbox": [10, 10, 50, 50]}],
-            "5": [{"label": "person", "confidence": 0.85, "bbox": [20, 20, 60, 60]}]
+            "5": [{"label": "person", "confidence": 0.85, "bbox": [20, 20, 60, 60]}],
         }
 
 
@@ -90,9 +94,10 @@ def test_image():
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp:
         temp_path = temp.name
         # Create a minimal valid JPG
-        with open(temp_path, 'wb') as f:
+        with open(temp_path, "wb") as f:
             f.write(
-                b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x08\x01\x01\x00\x01??\x00\xff\xd9')
+                b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x08\x01\x01\x00\x01??\x00\xff\xd9"
+            )
 
     return temp_path
 
@@ -152,7 +157,7 @@ def test_process_image(pipeline, test_image):
     os.unlink(test_image)
 
 
-@patch('langvio.utils.file_utils.is_video_file')
+@patch("langvio.utils.file_utils.is_video_file")
 def test_process_video(mock_is_video, pipeline, test_video):
     """Test processing a video."""
     # Mock is_video_file to return True
@@ -199,9 +204,14 @@ def test_get_visualization_config(pipeline):
     assert tracking_config["line_thickness"] == 3  # Thicker lines
 
     # Test with attributes
-    attribute_params = {"task_type": "identification", "attributes": [{"attribute": "color", "value": "red"}]}
+    attribute_params = {
+        "task_type": "identification",
+        "attributes": [{"attribute": "color", "value": "red"}],
+    }
     attribute_config = pipeline._get_visualization_config(attribute_params)
-    assert attribute_config["line_thickness"] > 2  # Increased line thickness for attributes
+    assert (
+        attribute_config["line_thickness"] > 2
+    )  # Increased line thickness for attributes
 
 
 def test_missing_processor_error(pipeline):

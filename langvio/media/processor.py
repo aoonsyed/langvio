@@ -28,8 +28,8 @@ class MediaProcessor:
                 "text_color": [255, 255, 255],
                 "line_thickness": 2,
                 "show_attributes": True,
-                "show_confidence": True
-            }
+                "show_confidence": True,
+            },
         }
 
         self.logger = logging.getLogger(__name__)
@@ -82,13 +82,17 @@ class MediaProcessor:
 
         return os.path.join(self.config["output_dir"], output_filename)
 
-    def visualize_image(self, image_path: str, output_path: str,
-                        detections: List[Dict[str, Any]],
-                        box_color: Optional[List[int]] = None,
-                        text_color: Optional[List[int]] = None,
-                        line_thickness: Optional[int] = None,
-                        show_attributes: Optional[bool] = None,
-                        show_confidence: Optional[bool] = None) -> None:
+    def visualize_image(
+        self,
+        image_path: str,
+        output_path: str,
+        detections: List[Dict[str, Any]],
+        box_color: Optional[List[int]] = None,
+        text_color: Optional[List[int]] = None,
+        line_thickness: Optional[int] = None,
+        show_attributes: Optional[bool] = None,
+        show_confidence: Optional[bool] = None,
+    ) -> None:
         """
         Enhanced visualization of detections on an image.
 
@@ -102,7 +106,9 @@ class MediaProcessor:
             show_attributes: Whether to display attribute information
             show_confidence: Whether to display confidence scores
         """
-        self.logger.info(f"Visualizing {len(detections)} detections on image: {image_path}")
+        self.logger.info(
+            f"Visualizing {len(detections)} detections on image: {image_path}"
+        )
 
         try:
             # Load image
@@ -133,7 +139,7 @@ class MediaProcessor:
                 text_color=viz_config["text_color"],
                 line_thickness=viz_config["line_thickness"],
                 show_attributes=viz_config.get("show_attributes", True),
-                show_confidence=viz_config.get("show_confidence", True)
+                show_confidence=viz_config.get("show_confidence", True),
             )
 
             # Save output
@@ -142,13 +148,17 @@ class MediaProcessor:
         except Exception as e:
             self.logger.error(f"Error visualizing image: {e}")
 
-    def visualize_video(self, video_path: str, output_path: str,
-                        frame_detections: Dict[str, List[Dict[str, Any]]],
-                        box_color: Optional[List[int]] = None,
-                        text_color: Optional[List[int]] = None,
-                        line_thickness: Optional[int] = None,
-                        show_attributes: Optional[bool] = None,
-                        show_confidence: Optional[bool] = None) -> None:
+    def visualize_video(
+        self,
+        video_path: str,
+        output_path: str,
+        frame_detections: Dict[str, List[Dict[str, Any]]],
+        box_color: Optional[List[int]] = None,
+        text_color: Optional[List[int]] = None,
+        line_thickness: Optional[int] = None,
+        show_attributes: Optional[bool] = None,
+        show_confidence: Optional[bool] = None,
+    ) -> None:
         """
         Enhanced visualization of detections on a video.
 
@@ -189,7 +199,7 @@ class MediaProcessor:
                 text_color=viz_config["text_color"],
                 line_thickness=viz_config["line_thickness"],
                 show_attributes=viz_config.get("show_attributes", True),
-                show_confidence=viz_config.get("show_confidence", True)
+                show_confidence=viz_config.get("show_confidence", True),
             )
 
             self.logger.info(f"Saved visualized video to: {output_path}")
@@ -200,15 +210,17 @@ class MediaProcessor:
     Modifications to improve visualization quality in MediaProcessor
     """
 
-    def _draw_detections_on_image(self,
-                                  image: np.ndarray,
-                                  detections: List[Dict[str, Any]],
-                                  box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
-                                  text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
-                                  line_thickness: int = 2,
-                                  show_attributes: bool = True,
-                                  show_confidence: bool = True,
-                                  show_relationships: bool = False) -> np.ndarray:  # Add parameter to control relationships
+    def _draw_detections_on_image(
+        self,
+        image: np.ndarray,
+        detections: List[Dict[str, Any]],
+        box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
+        text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
+        line_thickness: int = 2,
+        show_attributes: bool = True,
+        show_confidence: bool = True,
+        show_relationships: bool = False,
+    ) -> np.ndarray:  # Add parameter to control relationships
         """
         Enhanced method to draw detections on an image with attributes and activities.
 
@@ -244,11 +256,11 @@ class MediaProcessor:
                 continue  # Skip invalid boxes
 
             # Create label based on configuration
-            label_parts = [det['label']]
+            label_parts = [det["label"]]
 
             # Add confidence if requested
             if show_confidence and "confidence" in det:
-                conf = det['confidence']
+                conf = det["confidence"]
                 if isinstance(conf, (int, float)):
                     label_parts.append(f"{conf:.2f}")
 
@@ -273,7 +285,9 @@ class MediaProcessor:
             label = " | ".join(label_parts)
 
             # Draw bounding box with line thickness scaled by image size
-            thickness = max(1, min(line_thickness, int(min(image.shape[0], image.shape[1]) / 500)))
+            thickness = max(
+                1, min(line_thickness, int(min(image.shape[0], image.shape[1]) / 500))
+            )
             cv2.rectangle(output_image, (x1, y1), (x2, y2), box_color, thickness)
 
             # Calculate text size and scale font size based on image dimensions
@@ -284,11 +298,19 @@ class MediaProcessor:
             # Draw text background with slight transparency
             alpha = 0.6  # Transparency factor
             overlay = output_image.copy()
-            cv2.rectangle(overlay, (x1, y1 - text_size[1] - 5), (x1 + text_size[0], y1), box_color, -1)
+            cv2.rectangle(
+                overlay,
+                (x1, y1 - text_size[1] - 5),
+                (x1 + text_size[0], y1),
+                box_color,
+                -1,
+            )
             cv2.addWeighted(overlay, alpha, output_image, 1 - alpha, 0, output_image)
 
             # Draw text
-            cv2.putText(output_image, label, (x1, y1 - 5), font, font_scale, text_color, 1)
+            cv2.putText(
+                output_image, label, (x1, y1 - 5), font, font_scale, text_color, 1
+            )
 
             # Draw relationship lines if requested
             if show_relationships and "relationships" in det:
@@ -300,17 +322,30 @@ class MediaProcessor:
                             center1 = (int((x1 + x2) / 2), int((y1 + y2) / 2))
                             if "bbox" in rel_det:
                                 rel_box = rel_det["bbox"]
-                                center2 = (int((rel_box[0] + rel_box[2]) / 2), int((rel_box[1] + rel_box[3]) / 2))
+                                center2 = (
+                                    int((rel_box[0] + rel_box[2]) / 2),
+                                    int((rel_box[1] + rel_box[3]) / 2),
+                                )
 
                                 # Use different line styles for different relations
                                 if "near" in rel.get("relations", []):
                                     # Dashed line for "near"
-                                    self._draw_dashed_line(output_image, center1, center2, box_color,
-                                                           thickness=max(1, thickness - 1))
+                                    self._draw_dashed_line(
+                                        output_image,
+                                        center1,
+                                        center2,
+                                        box_color,
+                                        thickness=max(1, thickness - 1),
+                                    )
                                 else:
                                     # Solid line for other relations
-                                    cv2.line(output_image, center1, center2, box_color,
-                                             thickness=max(1, thickness - 1))
+                                    cv2.line(
+                                        output_image,
+                                        center1,
+                                        center2,
+                                        box_color,
+                                        thickness=max(1, thickness - 1),
+                                    )
 
                                 # Skip text labels for relationships to reduce clutter
                                 break
@@ -341,15 +376,17 @@ class MediaProcessor:
             if i % 2 == 0:
                 cv2.line(img, pts[i], pts[i + 1], color, thickness)
 
-    def _draw_detections_on_video(self,
-                                 input_path: str,
-                                 output_path: str,
-                                 frame_detections: Dict[str, List[Dict[str, Any]]],
-                                 box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
-                                 text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
-                                 line_thickness: int = 2,
-                                 show_attributes: bool = True,
-                                 show_confidence: bool = True) -> None:
+    def _draw_detections_on_video(
+        self,
+        input_path: str,
+        output_path: str,
+        frame_detections: Dict[str, List[Dict[str, Any]]],
+        box_color: Union[Tuple[int, int, int], List[int]] = (0, 255, 0),
+        text_color: Union[Tuple[int, int, int], List[int]] = (255, 255, 255),
+        line_thickness: int = 2,
+        show_attributes: bool = True,
+        show_confidence: bool = True,
+    ) -> None:
         """
         Enhanced method to draw detections on a video with tracking visualization.
 
@@ -374,7 +411,7 @@ class MediaProcessor:
         fps = cap.get(cv2.CAP_PROP_FPS)
 
         # Create video writer
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
         # For tracking visualization - keep track of past positions
@@ -400,7 +437,10 @@ class MediaProcessor:
                         track_id = det["track_id"]
                         # Get center of bounding box
                         bbox = det["bbox"]
-                        center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
+                        center = (
+                            int((bbox[0] + bbox[2]) / 2),
+                            int((bbox[1] + bbox[3]) / 2),
+                        )
 
                         # Add to track history
                         if track_id not in tracks:
@@ -420,8 +460,13 @@ class MediaProcessor:
 
                         # Draw line connecting positions
                         for i in range(len(positions) - 1):
-                            cv2.line(frame, positions[i], positions[i + 1], track_color,
-                                    thickness=max(1, line_thickness - 1))
+                            cv2.line(
+                                frame,
+                                positions[i],
+                                positions[i + 1],
+                                track_color,
+                                thickness=max(1, line_thickness - 1),
+                            )
 
                 # Draw detections
                 frame = self._draw_detections_on_image(
@@ -431,7 +476,7 @@ class MediaProcessor:
                     text_color,
                     line_thickness,
                     show_attributes,
-                    show_confidence
+                    show_confidence,
                 )
 
             # Write frame
@@ -454,11 +499,12 @@ class MediaProcessor:
         """
         # Use the track_id to generate repeatable colors
         hue = (track_id * 137 % 360) / 360.0  # Use prime number to distribute colors
-        sat = 0.7 + (track_id % 3) * 0.1      # Vary saturation slightly
-        val = 0.8 + (track_id % 2) * 0.2      # Vary value slightly
+        sat = 0.7 + (track_id % 3) * 0.1  # Vary saturation slightly
+        val = 0.8 + (track_id % 2) * 0.2  # Vary value slightly
 
         # Convert HSV to RGB then to BGR
         import colorsys
+
         r, g, b = colorsys.hsv_to_rgb(hue, sat, val)
         r, g, b = int(r * 255), int(g * 255), int(b * 255)
 

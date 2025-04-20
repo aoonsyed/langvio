@@ -83,12 +83,17 @@ def create_temp_copy(file_path: str, delete: bool = True) -> str:
     # Register for deletion if requested
     if delete:
         import atexit
-        atexit.register(lambda: os.remove(temp_path) if os.path.exists(temp_path) else None)
+
+        atexit.register(
+            lambda: os.remove(temp_path) if os.path.exists(temp_path) else None
+        )
 
     return temp_path
 
 
-def get_files_in_directory(directory: str, extensions: Optional[List[str]] = None) -> List[str]:
+def get_files_in_directory(
+    directory: str, extensions: Optional[List[str]] = None
+) -> List[str]:
     """
     Get files in a directory with optional extension filtering.
 

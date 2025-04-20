@@ -7,8 +7,9 @@ import json
 from typing import Dict, List, Any, Tuple, Optional
 
 
-def index_detections(detections: Dict[str, List[Dict[str, Any]]]) -> Tuple[
-    Dict[str, List[Dict[str, Any]]], Dict[str, Dict[str, Any]]]:
+def index_detections(
+    detections: Dict[str, List[Dict[str, Any]]],
+) -> Tuple[Dict[str, List[Dict[str, Any]]], Dict[str, Dict[str, Any]]]:
     """
     Create a copy of detections with unique object_id assigned to each detection.
 
@@ -37,7 +38,7 @@ def index_detections(detections: Dict[str, List[Dict[str, Any]]]) -> Tuple[
             # Add to object map with frame reference
             detection_map[object_id] = {
                 "frame_key": frame_key,
-                "detection": det  # Store original detection
+                "detection": det,  # Store original detection
             }
 
             object_id_counter += 1
@@ -45,8 +46,9 @@ def index_detections(detections: Dict[str, List[Dict[str, Any]]]) -> Tuple[
     return indexed_detections, detection_map
 
 
-def format_detection_summary(detections: Dict[str, List[Dict[str, Any]]],
-                             query_params: Dict[str, Any]) -> str:
+def format_detection_summary(
+    detections: Dict[str, List[Dict[str, Any]]], query_params: Dict[str, Any]
+) -> str:
     """
     Format the detection summary in a structured and readable way.
 
@@ -115,7 +117,9 @@ def format_detection_summary(detections: Dict[str, List[Dict[str, Any]]],
         # Add object counts to summary
         if object_counts:
             summary_parts.append("Object counts:")
-            for label, count in sorted(object_counts.items(), key=lambda x: x[1], reverse=True):
+            for label, count in sorted(
+                object_counts.items(), key=lambda x: x[1], reverse=True
+            ):
                 summary_parts.append(f"- {label}: {count} instances")
 
         # Add detailed object list (limited to avoid overwhelming the LLM)
@@ -131,7 +135,9 @@ def format_detection_summary(detections: Dict[str, List[Dict[str, Any]]],
         # Check for target objects specified in the query
         if query_params.get("target_objects"):
             target_objects = query_params["target_objects"]
-            summary_parts.append(f"\nTarget objects specified in query: {', '.join(target_objects)}")
+            summary_parts.append(
+                f"\nTarget objects specified in query: {', '.join(target_objects)}"
+            )
     else:
         # No detections available
         summary_parts.append("No detections available in the provided media")
@@ -155,7 +161,7 @@ def extract_object_ids(highlight_text: str) -> List[str]:
     cleaned_text = highlight_text.strip()
 
     # Try to parse as JSON array first
-    if cleaned_text.startswith('[') and cleaned_text.endswith(']'):
+    if cleaned_text.startswith("[") and cleaned_text.endswith("]"):
         try:
             parsed_ids = json.loads(cleaned_text)
             if isinstance(parsed_ids, list):
@@ -169,35 +175,37 @@ def extract_object_ids(highlight_text: str) -> List[str]:
             pass
 
     # Regular expression to find object IDs (obj_X format)
-    obj_pattern = r'obj_\d+'
+    obj_pattern = r"obj_\d+"
     found_ids = re.findall(obj_pattern, cleaned_text)
     if found_ids:
         return found_ids
 
     # Look for any bracketed IDs
-    bracket_pattern = r'\[([^\]]+)\]'
+    bracket_pattern = r"\[([^\]]+)\]"
     bracket_matches = re.findall(bracket_pattern, cleaned_text)
     for match in bracket_matches:
-        if match.startswith('obj_'):
+        if match.startswith("obj_"):
             object_ids.append(match)
 
     # If still no IDs found, split by lines and look for obj_ prefix
     if not object_ids:
-        lines = [line.strip() for line in cleaned_text.split('\n')]
+        lines = [line.strip() for line in cleaned_text.split("\n")]
         for line in lines:
-            if line.startswith('obj_') or 'obj_' in line:
+            if line.startswith("obj_") or "obj_" in line:
                 # Extract the obj_X part
                 parts = line.split()
                 for part in parts:
-                    if part.startswith('obj_'):
+                    if part.startswith("obj_"):
                         # Remove any punctuation
-                        clean_part = re.sub(r'[^\w_]', '', part)
+                        clean_part = re.sub(r"[^\w_]", "", part)
                         object_ids.append(clean_part)
 
     return object_ids
 
 
-def get_objects_by_ids(object_ids: List[str], detection_map: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+def get_objects_by_ids(
+    object_ids: List[str], detection_map: Dict[str, Dict[str, Any]]
+) -> List[Dict[str, Any]]:
     """
     Get the actual detection objects by their IDs.
 
@@ -214,16 +222,19 @@ def get_objects_by_ids(object_ids: List[str], detection_map: Dict[str, Dict[str,
         if obj_id in detection_map:
             object_info = detection_map[obj_id]
             # Create a reference that includes both the detection and its frame
-            result.append({
-                "frame_key": object_info["frame_key"],
-                "detection": object_info["detection"]
-            })
+            result.append(
+                {
+                    "frame_key": object_info["frame_key"],
+                    "detection": object_info["detection"],
+                }
+            )
 
     return result
 
 
-def parse_explanation_response(response_content: str, detection_map: Dict[str, Dict[str, Any]]) -> Tuple[
-    str, List[Dict[str, Any]]]:
+def parse_explanation_response(
+    response_content: str, detection_map: Dict[str, Dict[str, Any]]
+) -> Tuple[str, List[Dict[str, Any]]]:
     """
     Parse the LLM response to extract explanation and highlighted objects.
     The explanation section will be cleaned to remove the highlighting instructions.

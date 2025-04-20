@@ -14,17 +14,14 @@ from langvio.vision.base import BaseVisionProcessor
 from langvio.vision.utils import extract_detections
 from langvio.prompts.constants import (
     DEFAULT_CONFIDENCE_THRESHOLD,
-    DEFAULT_VIDEO_SAMPLE_RATE
+    DEFAULT_VIDEO_SAMPLE_RATE,
 )
 
 
 class YOLOProcessor(BaseVisionProcessor):
     """Enhanced vision processor using YOLO models"""
 
-    def __init__(self, name: str,
-                 model_path: str ,
-                 confidence: float,
-                 **kwargs):
+    def __init__(self, name: str, model_path: str, confidence: float, **kwargs):
         """
         Initialize YOLO processor.
 
@@ -37,7 +34,7 @@ class YOLOProcessor(BaseVisionProcessor):
         config = {
             "model_path": model_path,
             "confidence": DEFAULT_CONFIDENCE_THRESHOLD,
-            **kwargs
+            **kwargs,
         }
         super().__init__(name, config)
         self.logger = logging.getLogger(__name__)
@@ -52,13 +49,19 @@ class YOLOProcessor(BaseVisionProcessor):
         """
         try:
             self.logger.info(f"Loading YOLO model: {self.config['model_path']}")
-            self.model = YOLO(self.config["model_path"]) if self.name == "yolo" else YOLOE(self.config["model_path"])
+            self.model = (
+                YOLO(self.config["model_path"])
+                if self.name == "yolo"
+                else YOLOE(self.config["model_path"])
+            )
             return True
         except Exception as e:
             self.logger.error(f"Error loading YOLO model: {e}")
             return False
 
-    def process_image(self, image_path: str, query_params: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    def process_image(
+        self, image_path: str, query_params: Dict[str, Any]
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Process an image with YOLO with enhanced detection capabilities.
         Modified to return all detections without filtering.
@@ -88,11 +91,17 @@ class YOLOProcessor(BaseVisionProcessor):
             detections = extract_detections(results)
 
             # Enhance detections with attributes based on the image
-            detections = self._enhance_detections_with_attributes(detections, image_path)
+            detections = self._enhance_detections_with_attributes(
+                detections, image_path
+            )
 
             # Calculate relative positions if image dimensions provided
             if image_dimensions:
-                from langvio.vision.utils import calculate_relative_positions, detect_spatial_relationships
+                from langvio.vision.utils import (
+                    calculate_relative_positions,
+                    detect_spatial_relationships,
+                )
+
                 detections = calculate_relative_positions(detections, *image_dimensions)
                 detections = detect_spatial_relationships(detections)
 
@@ -102,8 +111,12 @@ class YOLOProcessor(BaseVisionProcessor):
             self.logger.error(f"Error processing image: {e}")
             return {"0": []}
 
-    def process_video(self, video_path: str, query_params: Dict[str, Any],
-                      sample_rate: int = DEFAULT_VIDEO_SAMPLE_RATE) -> Dict[str, List[Dict[str, Any]]]:
+    def process_video(
+        self,
+        video_path: str,
+        query_params: Dict[str, Any],
+        sample_rate: int = DEFAULT_VIDEO_SAMPLE_RATE,
+    ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Process a video with YOLO with enhanced activity and tracking detection.
         Modified to return all detections without filtering.
@@ -145,7 +158,9 @@ class YOLOProcessor(BaseVisionProcessor):
                 # Process every Nth frame
                 if frame_idx % sample_rate == 0:
                     # Save frame to temp file
-                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp:
+                    with tempfile.NamedTemporaryFile(
+                        suffix=".jpg", delete=False
+                    ) as temp:
                         temp_path = temp.name
 
                     cv2.imwrite(temp_path, frame)
@@ -157,11 +172,19 @@ class YOLOProcessor(BaseVisionProcessor):
                     detections = extract_detections(results)
 
                     # Enhance detections with attributes
-                    detections = self._enhance_detections_with_attributes(detections, temp_path)
+                    detections = self._enhance_detections_with_attributes(
+                        detections, temp_path
+                    )
 
                     # Calculate relative positions and relationships
-                    from langvio.vision.utils import calculate_relative_positions, detect_spatial_relationships
-                    detections = calculate_relative_positions(detections, *video_dimensions)
+                    from langvio.vision.utils import (
+                        calculate_relative_positions,
+                        detect_spatial_relationships,
+                    )
+
+                    detections = calculate_relative_positions(
+                        detections, *video_dimensions
+                    )
                     detections = detect_spatial_relationships(detections)
 
                     # Store ALL results without filtering
@@ -176,8 +199,13 @@ class YOLOProcessor(BaseVisionProcessor):
 
             # Analyze for activities and tracking across frames if needed
             # but don't filter out any detections yet
-            if frame_detections and query_params.get("task_type") in ["tracking", "activity"]:
-                frame_detections = self._analyze_video_for_activities(frame_detections, query_params)
+            if frame_detections and query_params.get("task_type") in [
+                "tracking",
+                "activity",
+            ]:
+                frame_detections = self._analyze_video_for_activities(
+                    frame_detections, query_params
+                )
 
             return frame_detections
         except Exception as e:

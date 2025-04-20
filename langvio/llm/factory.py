@@ -34,7 +34,7 @@ def register_llm_processors(registry: ModelRegistry) -> None:
                 "gpt-3.5",
                 OpenAIProcessor,
                 model_name="gpt-3.5-turbo",
-                model_kwargs={"temperature": 0.2}
+                model_kwargs={"temperature": 0.2},
             )
 
             # Register GPT-4 model
@@ -42,7 +42,7 @@ def register_llm_processors(registry: ModelRegistry) -> None:
                 "gpt-4",
                 OpenAIProcessor,
                 model_name="gpt-4-turbo",
-                model_kwargs={"temperature": 0.2}
+                model_kwargs={"temperature": 0.2},
             )
 
             llm_providers_found = True
@@ -60,7 +60,7 @@ def register_llm_processors(registry: ModelRegistry) -> None:
                 "gemini",
                 GeminiProcessor,
                 model_name="gemini-pro",
-                model_kwargs={"temperature": 0.2}
+                model_kwargs={"temperature": 0.2},
             )
 
             # Set as default if available
@@ -68,7 +68,7 @@ def register_llm_processors(registry: ModelRegistry) -> None:
                 "default",
                 GeminiProcessor,
                 model_name="gemini-pro",
-                model_kwargs={"temperature": 0.2}
+                model_kwargs={"temperature": 0.2},
             )
 
             llm_providers_found = True
