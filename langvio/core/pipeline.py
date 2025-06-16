@@ -222,7 +222,7 @@ class Pipeline:
             "highlighted_objects": highlighted_objects,
         }
 
-        self.logger.info(f"Processed query successfully")
+        self.logger.info("Processed query successfully")
         return result
 
     def _get_visualization_config(self, query_params: Dict[str, Any]) -> Dict[str, Any]:

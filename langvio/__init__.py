@@ -2,30 +2,27 @@
 langvio: Connect language models to vision models for natural language visual analysis
 """
 
-__version__ = "0.3.0"
+# Top-level imports
+import sys
 
-# Try to load environment variables from .env file
 from langvio.core.registry import ModelRegistry
+from langvio.core.pipeline import Pipeline
+from langvio.llm.base import BaseLLMProcessor
+from langvio.vision.base import BaseVisionProcessor
+from langvio.vision.yolo.detector import YOLOProcessor
+from langvio.llm.factory import register_llm_processors
+
+__version__ = "0.3.0"
 
 # Initialize the global model registry
 registry = ModelRegistry()
 
-# Import main components for easier access
-from langvio.core.pipeline import Pipeline
-from langvio.llm.base import BaseLLMProcessor
-from langvio.vision.base import BaseVisionProcessor
-
-# Register the YOLO processor
-from langvio.vision.yolo.detector import YOLOProcessor
-
+# Register vision processors
 registry.register_vision_processor("yolo", YOLOProcessor)
 registry.register_vision_processor("yoloe_large", YOLOProcessor)
 registry.register_vision_processor("yoloe", YOLOProcessor)
 
-
 # Register LLM processors using the factory
-from langvio.llm.factory import register_llm_processors
-
 register_llm_processors(registry)
 
 
@@ -42,7 +39,6 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
     Returns:
         A configured Pipeline instance
     """
-    import sys
 
     # Create the pipeline
     pipeline = Pipeline(config_path)
@@ -55,15 +51,12 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
 
     # Set the LLM processor if specified
     if llm_name:
-        # This will exit if the processor is not available
         pipeline.set_llm_processor(llm_name)
     else:
-        # If no specific LLM is requested, try to use the default from config
         try:
             default_llm = pipeline.config.config["llm"]["default"]
             pipeline.set_llm_processor(default_llm)
         except Exception:
-            # If we can't set a default LLM, check if any LLMs are available
             if len(registry.list_llm_processors()) == 0:
                 error_msg = (
                     "ERROR: No LLM providers are installed. Please install at least one provider:\n"
@@ -74,14 +67,13 @@ def create_pipeline(config_path=None, llm_name=None, vision_name=None):
                 print(error_msg, file=sys.stderr)
                 sys.exit(1)
             else:
-                # Use the first available LLM
                 available_llm = next(iter(registry.list_llm_processors()))
                 pipeline.set_llm_processor(available_llm)
 
     return pipeline
 
 
-# Version info
+# Public API
 __all__ = [
     "Pipeline",
     "create_pipeline",

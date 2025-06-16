@@ -87,7 +87,7 @@ class ColorDetector:
 
     @classmethod
     def detect_color(
-        cls, image_region: np.ndarray, return_all: bool = False, threshold: float = 0.15
+            cls, image_region: np.ndarray, return_all: bool = False, threshold: float = 0.15
     ) -> Union[str, Dict[str, float]]:
         """
         Detect the dominant color(s) in an image region using HSV color space.
@@ -98,14 +98,15 @@ class ColorDetector:
             threshold: Minimum percentage for a color to be considered (when return_all=False)
 
         Returns:
-            Dominant color name if return_all=False, or dictionary of {color_name: percentage} if return_all=True
+            Dominant color name if return_all=False, or a dict of {color_name: percentage}
+             if return_all=True
         """
         # Check if region is valid
         if (
-            image_region is None
-            or image_region.size == 0
-            or image_region.shape[0] == 0
-            or image_region.shape[1] == 0
+                image_region is None
+                or image_region.size == 0
+                or image_region.shape[0] == 0
+                or image_region.shape[1] == 0
         ):
             return "unknown" if not return_all else {}
 
@@ -137,7 +138,7 @@ class ColorDetector:
 
             # Add to color counts if percentage is significant
             if (
-                percentage > 0.05
+                    percentage > 0.05
             ):  # Only count colors covering at least 5% of the region
                 if color_name in color_counts:
                     color_counts[color_name] += percentage
@@ -163,7 +164,7 @@ class ColorDetector:
 
     @classmethod
     def detect_colors_layered(
-        cls, image_region: np.ndarray, max_colors: int = 3
+            cls, image_region: np.ndarray, max_colors: int = 3
     ) -> List[str]:
         """
         Detect up to max_colors different colors in the image region in order of dominance.
@@ -224,7 +225,7 @@ class ColorDetector:
             hsv_region = cv2.cvtColor(image_region, cv2.COLOR_BGR2HSV)
             avg_saturation = np.mean(hsv_region[:, :, 1])
             avg_brightness = np.mean(hsv_region[:, :, 2])
-        except:
+        except (cv2.error, IndexError):
             avg_saturation = 0
             avg_brightness = 0
 
@@ -348,7 +349,7 @@ class ColorDetector:
                 else:
                     # Default color if no match found
                     bgr_color = (0, 0, 0)
-            except:
+            except (KeyError, ValueError, TypeError):
                 # Fallback color
                 bgr_color = (0, 0, 0)
 
